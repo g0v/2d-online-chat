@@ -3,6 +3,7 @@
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 <script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
+<script src="//meet.jit.si/libs/lib-jitsi-meet.min.js"></script>
 <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.6/css/bootstrap.css">
 <style>
 #game {
@@ -19,8 +20,6 @@
     padding: 0;
     margin: 0;
     position: absolute;
-    left: 200px;
-    top: 200px;
 }
 .player-name {
     position: absolute;
@@ -40,15 +39,22 @@
         <div class="col-md-4">
             Name: <input type="text" id="name" value="nobody"><br>
             Character: <select id="character"></select>
+			<form id="room-form">
+				Room: <input type="text" name="room-name" value="chat2d">
+				<button type="submit">Join</button>
+			</form>
         </div>
     </div>
 </div>
 <script id="tmpl-player" type="text/html">
 <div class="player">
-    <div class="player-name">nobody</div>
+    <div class="player-name"></div>
 </div>
 </script>
 <script>
+let connection = null;
+let room = null;
+
 var characters = [
     'school uniform 1/su1 Student fmale 01',
     'school uniform 1/su1 Student fmale 02',
@@ -190,28 +196,46 @@ characters.map(function(c) {
         $('#character').append($('<option></option>').text(c));
 });
 
+$('#character option').eq(Math.floor(Math.random() * characters.length)).prop('selected', true);
+
 var add_player = function(options){
     var player_dom = $($('#tmpl-player').html());
     player_dom.css('background-image', 'url("sprite/' + options.character + '.png")');
-    player_dom.data('options', options);
+	$('.player-name', player_dom).text(options.name);
+    player_dom.data('character', options.character);
+	$('#game').append(player_dom);
+	player_dom.css('left', options.left + 'px').css('top', options.top + 'px');
     return player_dom;
 };
 
-var player = add_player({character: characters[0]});
-$('#game').append(player);
+var player = add_player({
+	character: characters[0],
+	top: Math.floor(Math.random() * 400) + 100,
+	left: Math.floor(Math.random() * 400) + 100,
+	name: $('#name').val(),
+});
 
 $('#character').change(function(e){
     player.css('background-image', 'url("sprite/' + $(this).val() + '.png")');
+	player.data('character', $(this).val());
     $('#character').blur();
-});
+
+	if (room) {
+		room.setLocalParticipantProperty('character', $(this).val());
+	}
+}).change();
 
 $('#name').keyup(function(e){
     $('.player-name', player).text($(this).val());
+	if (room) {
+		room.setDisplayName($('#name').val());
+	}
 });
 
 // 37:left, 38:up, 39:right, 40:down
 var pressing = null;
 var pressing_start = null;
+
 $('body').keydown(function(e){
     if ([37,38,39,40].indexOf(e.which) < 0) return;
     if (pressing == e.which) return;
@@ -223,6 +247,7 @@ $('body').keydown(function(e){
     }
 });
 
+var prev_update_pos = null;
 var moving_loop = function(){
     if (pressing !== null) {
         var dx = dy = 0;
@@ -260,12 +285,177 @@ var moving_loop = function(){
         }
         player.data('col', col);
         player.css('top', pos.top + dy).css('left', pos.left + dx);
-        player.css('background-position', (-1*col*32) + 'px ' + (-1*row*32) + 'px');
+		player.css('background-position', (-1*col*32) + 'px ' + (-1*row*32) + 'px');
+
     }
+
+	if (room) {
+		if (prev_update_pos === null || (new Date).getTime() - prev_update_pos > 100) {
+			room.setLocalParticipantProperty('top', player.position().top);
+			room.setLocalParticipantProperty('left', player.position().left);
+			prev_update_pos = (new Date).getTime();
+		}
+	}
     setTimeout(moving_loop, 10);
 };
 
 moving_loop();
+
+function onConnectionFailed() {
+    alert('Connection Failed!');
+}
+
+function onRemoteTrack(track) {
+}
+
+function onLocalTracks(tracks) {
+}
+
+var players = {};
+
+function update_member_list() {
+    for (var id in room.participants) {
+        var participant = room.participants[id];
+		if ('undefined' === typeof(players[id])) {
+			players[id] = add_player({
+				character: participant.getProperty('character'),
+				top: participant.getProperty('top'),
+				left: participant.getProperty('left'),
+				name: participant.getDisplayName(),
+				id: id,
+			});
+		}
+	}
+}
+
+function onConferenceJoined() {
+    room.setDisplayName($('#name').val());
+	room.setLocalParticipantProperty('character', player.data('character'));
+	room.setLocalParticipantProperty('top', player.position().top);
+	room.setLocalParticipantProperty('left', player.position().left);
+	update_member_list();
+
+    room.on(JitsiMeetJS.events.conference.USER_JOINED, (id, user) => {
+		update_member_list();
+    });
+
+    room.on(JitsiMeetJS.events.conference.USER_LEFT, (id, user) => {
+		players[id].remove();
+		delete(players[id]);
+    });
+
+    room.on(JitsiMeetJS.events.conference.PARTICIPANT_PROPERTY_CHANGED, (user, text, ts) => {
+		var id = user.getId();
+		if (['top', 'left'].indexOf(text) >= 0) {
+			if ('undefined' !== typeof(players[id])) {
+				players[id]
+					.css('left', user.getProperty('left') + 'px')
+					.css('top', user.getProperty('top') + 'px')
+				;
+			}
+		} else if ('character' == text) {
+			if ('undefined' !== typeof(players[id])) {
+				players[id].css('background-image', 'url("sprite/' + room.participants[id].getProperty('character') + '.png")');
+			}
+		} else {
+			console.log(text);
+		}
+    });
+
+    room.on(JitsiMeetJS.events.conference.DISPLAY_NAME_CHANGED, (id, user) => {
+		$('.player-name' ,players[id]).text(user);
+    });
+
+}
+
+function onConnectionSuccess() {
+    room = connection.initJitsiConference(confOptions.confID, confOptions);
+    room.on(JitsiMeetJS.events.conference.TRACK_ADDED, onRemoteTrack);
+    room.on(JitsiMeetJS.events.conference.TRACK_REMOVED, track => {
+        console.log(`track removed!!!${track}`);
+    });
+
+    room.on(
+        JitsiMeetJS.events.conference.CONFERENCE_JOINED,
+        onConferenceJoined);
+
+	room.join();
+};
+
+function disconnect() {
+    connection.removeEventListener(
+        JitsiMeetJS.events.connection.CONNECTION_ESTABLISHED,
+        onConnectionSuccess);
+    connection.removeEventListener(
+        JitsiMeetJS.events.connection.CONNECTION_FAILED,
+        onConnectionFailed);
+    connection.removeEventListener(
+        JitsiMeetJS.events.connection.CONNECTION_DISCONNECTED,
+        disconnect);
+}
+
+const options = {
+    hosts: {
+        domain: 'meet.jit.si',
+        muc: 'conference.meet.jit.si',
+        focus: "focus.meet.jit.si",
+    },
+    bosh: '//meet.jit.si/http-bind',
+
+   // The name of client node advertised in XEP-0115 'c' stanza
+   clientNode: 'http://jitsi.org/jitsimeet'
+};
+
+var confOptions = {
+    openBridgeChannel: true,
+    confID: 'chat2d',
+};
+
+JitsiMeetJS.setLogLevel(JitsiMeetJS.logLevels.ERROR);
+const initOptions = {
+    disableAudioLevels: false,
+
+    // The ID of the jidesha extension for Chrome.
+    desktopSharingChromeExtId: 'mbocklcggfhnbahlnepmldehdhpjfcjp',
+
+    // Whether desktop sharing should be disabled on Chrome.
+    desktopSharingChromeDisabled: false,
+
+    // The media sources to use when using screen sharing with the Chrome
+    // extension.
+    desktopSharingChromeSources: [ 'screen', 'window' ],
+
+    // Required version of Chrome extension
+    desktopSharingChromeMinExtVersion: '0.1',
+
+    // Whether desktop sharing should be disabled on Firefox.
+    desktopSharingFirefoxDisabled: true
+};
+
+$('#room-form').submit(function(e){
+	e.preventDefault();
+	confOptions.confID = $('#room-form [name="room-name"]').val();
+	$('#room-form').hide();
+
+	JitsiMeetJS.init(initOptions);
+	connection = new JitsiMeetJS.JitsiConnection(null, null, options);
+
+	connection.addEventListener(
+		JitsiMeetJS.events.connection.CONNECTION_ESTABLISHED,
+		onConnectionSuccess);
+	connection.addEventListener(
+		JitsiMeetJS.events.connection.CONNECTION_FAILED,
+		onConnectionFailed);
+	connection.addEventListener(
+		JitsiMeetJS.events.connection.CONNECTION_DISCONNECTED,
+		disconnect);
+
+	connection.connect();
+
+	JitsiMeetJS.createLocalTracks({ devices: [ 'audio' ] })
+		.then(onLocalTracks);
+});
+
 </script>
 </body>
 </html>
