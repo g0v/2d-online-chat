@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
+<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.6/css/bootstrap.css">
+<style>
+#game {
+    border : 1px solid black;
+    width: 600px;
+    height: 600px;
+    position: relative;
+    background-color: yellow;
+}
+.player {
+    width: 32px;
+    height: 32px;
+    background-repeat:no-repeat;
+    padding: 0;
+    margin: 0;
+    position: absolute;
+    left: 200px;
+    top: 200px;
+}
+.player-name {
+    position: absolute;
+    text-align: center;
+    top: -20px;
+    left: -84px;
+    width: 200px;
+}
+</style>
+</head>
+<body>
+<div class="container-fluid">
+    <div class="row-fluid">
+        <div class="col-md-8">
+            <div id="game"></div>
+        </div>
+        <div class="col-md-4">
+            Name: <input type="text" id="name" value="nobody"><br>
+            Character: <select id="character"></select>
+        </div>
+    </div>
+</div>
+<script id="tmpl-player" type="text/html">
+<div class="player">
+    <div class="player-name">nobody</div>
+</div>
+</script>
+<script>
+var characters = [
+    'school uniform 1/su1 Student fmale 01',
+    'school uniform 1/su1 Student fmale 02',
+    'school uniform 1/su1 Student fmale 03',
+    'school uniform 1/su1 Student fmale 04',
+    'school uniform 1/su1 Student fmale 05',
+    'school uniform 1/su1 Student fmale 06',
+    'school uniform 1/su1 Student fmale 07',
+    'school uniform 1/su1 Student fmale 08',
+    'school uniform 1/su1 Student fmale 09',
+    'school uniform 1/su1 Student fmale 10',
+    'school uniform 1/su1 Student fmale 11',
+    'school uniform 1/su1 Student fmale 12',
+    'school uniform 1/su1 Student fmale 13',
+    'school uniform 1/su1 Student fmale 14',
+    'school uniform 1/su1 Student fmale 15',
+    'school uniform 1/su1 Student fmale 16',
+    'school uniform 1/su1 Student fmale 17',
+    'school uniform 1/su1 Student fmale 18',
+    'school uniform 1/su1 Student male 01',
+    'school uniform 1/su1 Student male 02',
+    'school uniform 1/su1 Student male 03',
+    'school uniform 1/su1 Student male 04',
+    'school uniform 1/su1 Student male 05',
+    'school uniform 1/su1 Student male 06',
+    'school uniform 1/su1 Student male 07',
+    'school uniform 1/su1 Student male 08',
+    'school uniform 1/su1 Student male 09',
+    'school uniform 1/su1 Student male 10',
+    'school uniform 1/su1 Student male 11',
+    'school uniform 1/su1 Student male 12',
+    'school uniform 1/su1 Student male 13',
+    'school uniform 2/su2 Student fmale 01',
+    'school uniform 2/su2 Student fmale 02',
+    'school uniform 2/su2 Student fmale 03',
+    'school uniform 2/su2 Student fmale 04',
+    'school uniform 2/su2 Student fmale 05',
+    'school uniform 2/su2 Student fmale 06',
+    'school uniform 2/su2 Student fmale 07',
+    'school uniform 2/su2 Student fmale 08',
+    'school uniform 2/su2 Student fmale 09',
+    'school uniform 2/su2 Student fmale 10',
+    'school uniform 2/su2 Student fmale 11',
+    'school uniform 2/su2 Student fmale 12',
+    'school uniform 2/su2 Student fmale 13',
+    'school uniform 2/su2 Student fmale 14',
+    'school uniform 2/su2 Student fmale 15',
+    'school uniform 2/su2 Student fmale 16',
+    'school uniform 2/su2 Student fmale 17',
+    'school uniform 2/su2 Student fmale 18',
+    'school uniform 2/su2 Student male 01',
+    'school uniform 2/su2 Student male 02',
+    'school uniform 2/su2 Student male 03',
+    'school uniform 2/su2 Student male 04',
+    'school uniform 2/su2 Student male 05',
+    'school uniform 2/su2 Student male 06',
+    'school uniform 2/su2 Student male 07',
+    'school uniform 2/su2 Student male 08',
+    'school uniform 2/su2 Student male 09',
+    'school uniform 2/su2 Student male 10',
+    'school uniform 2/su2 Student male 11',
+    'school uniform 2/su2 Student male 12',
+    'school uniform 2/su2 Student male 13',
+    'school uniform 3/su3 Student fmale 01',
+    'school uniform 3/su3 Student fmale 02',
+    'school uniform 3/su3 Student fmale 03',
+    'school uniform 3/su3 Student fmale 04',
+    'school uniform 3/su3 Student fmale 05',
+    'school uniform 3/su3 Student fmale 06',
+    'school uniform 3/su3 Student fmale 07',
+    'school uniform 3/su3 Student fmale 08',
+    'school uniform 3/su3 Student fmale 09',
+    'school uniform 3/su3 Student fmale 10',
+    'school uniform 3/su3 Student fmale 11',
+    'school uniform 3/su3 Student fmale 12',
+    'school uniform 3/su3 Student fmale 13',
+    'school uniform 3/su3 Student fmale 14',
+    'school uniform 3/su3 Student fmale 15',
+    'school uniform 3/su3 Student fmale 16',
+    'school uniform 3/su3 Student fmale 17',
+    'school uniform 3/su3 Student fmale 18',
+    'school uniform 3/su3 Student male 01',
+    'school uniform 3/su3 Student male 02',
+    'school uniform 3/su3 Student male 03',
+    'school uniform 3/su3 Student male 04',
+    'school uniform 3/su3 Student male 05',
+    'school uniform 3/su3 Student male 06',
+    'school uniform 3/su3 Student male 07',
+    'school uniform 3/su3 Student male 08',
+    'school uniform 3/su3 Student male 09',
+    'school uniform 3/su3 Student male 10',
+    'school uniform 3/su3 Student male 11',
+    'school uniform 3/su3 Student male 12',
+    'school uniform 3/su3 Student male 13',
+    'school uniform 4/su4 Student fmale 01',
+    'school uniform 4/su4 Student fmale 02',
+    'school uniform 4/su4 Student fmale 03',
+    'school uniform 4/su4 Student fmale 04',
+    'school uniform 4/su4 Student fmale 05',
+    'school uniform 4/su4 Student fmale 06',
+    'school uniform 4/su4 Student fmale 07',
+    'school uniform 4/su4 Student fmale 08',
+    'school uniform 4/su4 Student fmale 09',
+    'school uniform 4/su4 Student fmale 10',
+    'school uniform 4/su4 Student fmale 11',
+    'school uniform 4/su4 Student fmale 12',
+    'school uniform 4/su4 Student fmale 13',
+    'school uniform 4/su4 Student fmale 14',
+    'school uniform 4/su4 Student fmale 15',
+    'school uniform 4/su4 Student fmale 16',
+    'school uniform 4/su4 Student fmale 17',
+    'school uniform 4/su4 Student fmale 18',
+    'school uniform 4/su4 Student male 01',
+    'school uniform 4/su4 Student male 02',
+    'school uniform 4/su4 Student male 03',
+    'school uniform 4/su4 Student male 04',
+    'school uniform 4/su4 Student male 05',
+    'school uniform 4/su4 Student male 06',
+    'school uniform 4/su4 Student male 07',
+    'school uniform 4/su4 Student male 08',
+    'school uniform 4/su4 Student male 09',
+    'school uniform 4/su4 Student male 10',
+    'school uniform 4/su4 Student male 11',
+    'school uniform 4/su4 Student male 12',
+    'school uniform 4/su4 Student male 13',
+    'teachers/Headmaster fmale',
+    'teachers/Headmaster male',
+    'teachers/Teacher fmale 01',
+    'teachers/Teacher fmale 02',
+    'teachers/Teacher fmale 03',
+    'teachers/Teacher fmale 04',
+    'teachers/Teacher male 01',
+    'teachers/Teacher male 02',
+    'teachers/Teacher male 03',
+    'teachers/Teacher male 04',
+];
+
+characters.map(function(c) {
+        $('#character').append($('<option></option>').text(c));
+});
+
+var add_player = function(options){
+    var player_dom = $($('#tmpl-player').html());
+    player_dom.css('background-image', 'url("sprite/' + options.character + '.png")');
+    player_dom.data('options', options);
+    return player_dom;
+};
+
+var player = add_player({character: characters[0]});
+$('#game').append(player);
+
+$('#character').change(function(e){
+    player.css('background-image', 'url("sprite/' + $(this).val() + '.png")');
+    $('#character').blur();
+});
+
+$('#name').keyup(function(e){
+    $('.player-name', player).text($(this).val());
+});
+
+// 37:left, 38:up, 39:right, 40:down
+var pressing = null;
+var pressing_start = null;
+$('body').keydown(function(e){
+    if ([37,38,39,40].indexOf(e.which) < 0) return;
+    if (pressing == e.which) return;
+    pressing = e.which;
+    pressing_start = null;
+}).keyup(function(e){
+    if (pressing == e.which) {
+        pressing = null;
+    }
+});
+
+var moving_loop = function(){
+    if (pressing !== null) {
+        var dx = dy = 0;
+        var row = 0;
+        if (pressing == 37) { // left
+            dx = -1;
+            dy = 0;
+            row = 1;
+        } else if (pressing == 38) { // up
+            dx = 0;
+            dy = -1;
+            row = 3;
+        } else if (pressing == 39) { // right
+            dx = 1;
+            dy = 0;
+            row = 2;
+        } else if (pressing == 40) { // down
+            dx = 0;
+            dy = 1;
+            row = 0;
+        }
+
+        pos = player.position();
+        if (pos.top + dy < 20) dy = 0;
+        if (pos.left + dx < 0) dx = 0;
+        if (pos.top + dy > 600 - 32) dy = 0;
+        if (pos.left + dx > 600 - 32) dx = 0;
+
+        if (player.data('row') == row) {
+            var col = player.data('col');
+            col = (col + 1) % 3;
+        } else {
+            player.data('row', row);
+            var col = 0;
+        }
+        player.data('col', col);
+        player.css('top', pos.top + dy).css('left', pos.left + dx);
+        player.css('background-position', (-1*col*32) + 'px ' + (-1*row*32) + 'px');
+    }
+    setTimeout(moving_loop, 10);
+};
+
+moving_loop();
+</script>
+</body>
+</html>
+
