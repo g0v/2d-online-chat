@@ -22,7 +22,7 @@
     margin: 0;
     position: absolute;
 }
-.player-name {
+.player-name-box {
     position: absolute;
     text-align: center;
     top: -20px;
@@ -48,14 +48,15 @@
 				<button type="submit">Join</button>
 			</form>
             <form id="joined-form" style="display:none">
-                Say: <input type="text" id="say" placeholder="say something?">
+                <div>Say: <input type="text" id="say" placeholder="say something?"></div>
+                <button id="mic-switch">Mic: on</button>
             </form>
         </div>
     </div>
 </div>
 <script id="tmpl-player" type="text/html">
 <div class="player">
-    <div class="player-name"></div>
+    <div class="player-name-box"><span class="player-name"></span></div>
     <div class="popover fade top in" role="tooltip" style="display: none;"><div class="arrow" style="top: 100%;"></div><h3 class="popover-title"></h3><div class="popover-content"></div></div>
 </div>
 </script>
@@ -274,6 +275,18 @@ $('#name').keyup(function(e){
 var pressing = null;
 var pressing_start = null;
 
+$('#mic-switch').click(function(e){
+    e.preventDefault();
+    if (player.data('audio-track').isMuted()) {
+        player.data('audio-track').unmute();
+        $('#mic-switch').text('Mic: on');
+    } else {
+        player.data('audio-track').mute();
+        $('#mic-switch').text('Mic: off');
+    }
+
+});
+
 $('#joined-form').submit(function(e){
     e.preventDefault();
     if (room && $('#say').val()) {
@@ -422,10 +435,38 @@ function onConnectionFailed() {
 }
 
 function onRemoteTrack(track) {
+    if (track.isLocal()) {
+        return;
+    }
+    const participant = track.getParticipantId();
+    if (track.getType() == 'audio') {
+        $('#game').append(`<audio id="audio-${participant}" autoplay="1" class="remote" />`);
+        track.attach($(`#audio-${participant}`)[0]);
+
+    } else if (track.getType() == 'video') {
+        // TODO
+    }
 }
 
 function onLocalTracks(tracks) {
+    for (let i = 0; i < tracks.length; i++) {
+        if (tracks[i].getType() === 'video') {
+            // TODO
+        } else {
+            player.data('audio-track', tracks[i]);
+            room.addTrack(tracks[i]);
+            tracks[i].addEventListener(JitsiMeetJS.events.track.TRACK_AUDIO_LEVEL_CHANGED, function(audioLevel) {
+                if (!player.data('audio-track').isMuted()) {
+                    level_changed(player, audioLevel);
+                }
+            });
+        }
+    }
 }
+
+var level_changed = function(player_dom, audioLevel){
+    $('.player-name', player_dom).css('background-color', 'rgba(0,0,0,' + audioLevel + ')');
+};
 
 var players = {};
 
@@ -492,6 +533,11 @@ function onConferenceJoined() {
         $('.popover-title', players[id]).text(user);
     });
 
+    room.on(JitsiMeetJS.events.conference.TRACK_AUDIO_LEVEL_CHANGED, (id, audioLevel) => {
+        if ('undefined' !== typeof(players[id])) {
+            level_changed(players[id], audioLevel);
+        }
+    });
 }
 
 function onConnectionSuccess() {
@@ -506,6 +552,9 @@ function onConnectionSuccess() {
         onConferenceJoined);
 
 	room.join();
+
+	JitsiMeetJS.createLocalTracks({ devices: [ 'audio' ] })
+		.then(onLocalTracks);
 };
 
 function disconnect() {
@@ -578,9 +627,6 @@ $('#room-form').submit(function(e){
 		disconnect);
 
 	connection.connect();
-
-	JitsiMeetJS.createLocalTracks({ devices: [ 'audio' ] })
-		.then(onLocalTracks);
 });
 
 </script>
