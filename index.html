@@ -302,7 +302,7 @@ var moving_loop = function(){
             var col = 0;
         }
         players[id].data('col', col);
-        players[id].css('top', pos.top + dy).css('left', pos.left + dx);
+        players[id].css('top', pos.top + dy).css('left', pos.left + dx).css('z-index', pos.top);;
 		players[id].css('background-position', (-1*col*32) + 'px ' + (-1*row*32) + 'px');
     }
 
@@ -341,7 +341,7 @@ var moving_loop = function(){
             var col = 0;
         }
         player.data('col', col);
-        player.css('top', pos.top + dy).css('left', pos.left + dx);
+        player.css('top', pos.top + dy).css('left', pos.left + dx).css('z-index', pos.top + dy);
 		player.css('background-position', (-1*col*32) + 'px ' + (-1*row*32) + 'px');
 
     }
