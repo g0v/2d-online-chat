@@ -64,6 +64,10 @@
 let connection = null;
 let room = null;
 
+if (location.search.match(/room=([^&]*)/)) {
+    var matches = location.search.match(/room=([^&]*)/);
+    $('input[name="room-name"]').val(matches[1]);
+}
 var characters = [
     'school uniform 1/su1 Student fmale 01',
     'school uniform 1/su1 Student fmale 02',
