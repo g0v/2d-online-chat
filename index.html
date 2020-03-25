@@ -5,6 +5,7 @@
 <script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
 <script src="//meet.jit.si/libs/lib-jitsi-meet.min.js"></script>
 <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.6/css/bootstrap.css">
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
 <style>
 #game {
     border : 1px solid black;
@@ -28,6 +29,9 @@
     left: -84px;
     width: 200px;
 }
+.player .popover {
+    position: absolute;
+}
 </style>
 </head>
 <body>
@@ -43,12 +47,16 @@
 				Room: <input type="text" name="room-name" value="chat2d">
 				<button type="submit">Join</button>
 			</form>
+            <form id="joined-form" style="display:none">
+                Say: <input type="text" id="say" placeholder="say something?">
+            </form>
         </div>
     </div>
 </div>
 <script id="tmpl-player" type="text/html">
 <div class="player">
     <div class="player-name"></div>
+    <div class="popover fade top in" role="tooltip" style="display: none;"><div class="arrow" style="top: 100%;"></div><h3 class="popover-title"></h3><div class="popover-content"></div></div>
 </div>
 </script>
 <script>
@@ -204,6 +212,7 @@ var add_player = function(options){
 	$('.player-name', player_dom).text(options.name);
     player_dom.data('character', options.character);
 	$('#game').append(player_dom);
+    $('.popover-title', player_dom).text(options.name);
     if ('undefined' !== typeof(options.left)) {
         player_dom.css('left', options.left + 'px').css('top', options.top + 'px');
     }
@@ -218,6 +227,32 @@ var player = add_player({
 	name: $('#name').val(),
 });
 
+var player_chat_resize = function(p){
+    console.log(p);
+    if ($('.chat-message', p).length == 0) {
+        $('.popover', p).hide();
+        return;
+    }
+    $('.popover', p).css({
+        top: $('.popover', p).height() * -1,
+        left: -1 * Math.floor($('.popover', p).width() / 2) + 16,
+    });
+};
+
+var player_say = function(p, s, close_at){
+    $('.popover', p).show();
+    $('.popover-content', p).append(
+        $('<div></div>').addClass('chat-message').text(s).data('close_at', close_at)
+    );
+    player_chat_resize(p);
+};
+
+$('#game').on('click', '.chat-message', function(e){
+    var player_dom = $(this).parents('.player');
+    $(this).remove();
+    player_chat_resize(player_dom);
+});
+
 $('#character').change(function(e){
     player.css('background-image', 'url("sprite/' + $(this).val() + '.png")');
 	player.data('character', $(this).val());
@@ -230,6 +265,7 @@ $('#character').change(function(e){
 
 $('#name').keyup(function(e){
     $('.player-name', player).text($(this).val());
+    $('.popover-title', player).text($(this).val());
 	if (room) {
 		room.setDisplayName($('#name').val());
 	}
@@ -239,7 +275,23 @@ $('#name').keyup(function(e){
 var pressing = null;
 var pressing_start = null;
 
+$('#joined-form').submit(function(e){
+    e.preventDefault();
+    if (room && $('#say').val()) {
+        var say = $('#say').val();
+        room.sendTextMessage(say);
+        $('#say').val('');
+        player_say(player, say, (new Date).getTime() + 20 * 1000);
+    }
+});
+
 $('body').keydown(function(e){
+    if ('Enter' == e.key) {
+        if ($('#say').is(':visible') && !$('#say').is(':focus')) {
+            $('#say').focus();
+        }
+        return;
+    }
     if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].indexOf(e.key) < 0) return;
     if (pressing == e.key) return;
     pressing = e.key;
@@ -252,6 +304,13 @@ $('body').keydown(function(e){
 
 var prev_update_pos = null;
 var moving_loop = function(){
+    var now = (new Date).getTime();
+    $('.chat-message').each(function(){
+        if ($(this).data('close_at') < now) {
+            $(this).click();
+        }
+    });
+
     for (var id in players) {
         if (!players[id].data('moving')) {
             continue;
@@ -397,6 +456,13 @@ function onConferenceJoined() {
 		update_member_list();
     });
 
+    room.on(JitsiMeetJS.events.conference.MESSAGE_RECEIVED, (id, text, ts, nick, other) => {
+        if ('undefined' !== typeof(players[id])) {
+            if (ts + 20 * 1000 < (new Date).getTime()) return;
+            player_say(players[id], text, ts + 20 * 1000);
+        }
+    });
+
     room.on(JitsiMeetJS.events.conference.USER_LEFT, (id, user) => {
 		players[id].remove();
 		delete(players[id]);
@@ -419,6 +485,7 @@ function onConferenceJoined() {
 
     room.on(JitsiMeetJS.events.conference.DISPLAY_NAME_CHANGED, (id, user) => {
 		$('.player-name' ,players[id]).text(user);
+        $('.popover-title', players[id]).text(user);
     });
 
 }
@@ -491,6 +558,7 @@ $('#room-form').submit(function(e){
 	e.preventDefault();
 	confOptions.confID = $('#room-form [name="room-name"]').val();
 	$('#room-form').hide();
+    $('#joined-form').show();
 
 	JitsiMeetJS.init(initOptions);
 	connection = new JitsiMeetJS.JitsiConnection(null, null, options);
