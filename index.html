@@ -457,7 +457,11 @@ function onConferenceJoined() {
 
     room.on(JitsiMeetJS.events.conference.MESSAGE_RECEIVED, (id, text, ts, nick, other) => {
         if ('undefined' !== typeof(players[id])) {
-            ts_number = (new Date(ts)).getTime();
+            if ('undefined' === typeof(ts)) {
+                ts_number = (new Date).getTime();
+            } else {
+                ts_number = (new Date(ts)).getTime();
+            }
             if (ts_number + 20 * 1000 < (new Date).getTime()) return;
             player_say(players[id], text, ts_number + 20 * 1000);
         }
