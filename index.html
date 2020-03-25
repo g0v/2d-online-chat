@@ -293,6 +293,7 @@ var moving_loop = function(){
 		if (prev_update_pos === null || (new Date).getTime() - prev_update_pos > 100) {
 			room.setLocalParticipantProperty('top', player.position().top);
 			room.setLocalParticipantProperty('left', player.position().left);
+			room.setLocalParticipantProperty('row', player.data('row'));
 			prev_update_pos = (new Date).getTime();
 		}
 	}
@@ -348,9 +349,12 @@ function onConferenceJoined() {
 		var id = user.getId();
 		if (['top', 'left'].indexOf(text) >= 0) {
 			if ('undefined' !== typeof(players[id])) {
+                col = 0;
+                row = parseInt(user.getProperty('row'));
 				players[id]
 					.css('left', user.getProperty('left') + 'px')
 					.css('top', user.getProperty('top') + 'px')
+                    .css('background-position', (-1*col*32) + 'px ' + (-1*row*32) + 'px')
 				;
 			}
 		} else if ('character' == text) {
