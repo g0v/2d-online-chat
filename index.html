@@ -313,11 +313,15 @@ function onConferenceJoined() {
 		if (['top', 'left', 'character'].indexOf(text) >= 0) {
 			if ('undefined' !== typeof(Game.heroes[id])) {
 				var x, y;
-				Game.heroes[id].target_x = x = parseInt(room.participants[id].getProperty('left'));
-				Game.heroes[id].target_y = y = parseInt(room.participants[id].getProperty('top'));
-				if (Game.heroes[id].x == Game.heroes[id].y && Game.heroes[id].x == 0) {
-					Game.heroes[id].x = x;
-					Game.heroes[id].y = y;
+				x = parseInt(room.participants[id].getProperty('left'));
+				y = parseInt(room.participants[id].getProperty('top'));
+				if (!Number.isNaN(x) && !Number.isNaN(y)) {
+					Game.heroes[id].target_x = x;
+					Game.heroes[id].target_y = y;
+					if (Game.heroes[id].x == Game.heroes[id].y && Game.heroes[id].x == 0) {
+						Game.heroes[id].x = x;
+						Game.heroes[id].y = y;
+					}
 				}
 				if (Game.heroes[id].character != room.participants[id].getProperty('character')) {
 					Game.heroes[id].changeCharacter(room.participants[id].getProperty('character'));
