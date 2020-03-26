@@ -4,33 +4,15 @@
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 <script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
 <script src="//meet.jit.si/libs/lib-jitsi-meet.min.js"></script>
+<script src="common.js"></script>
+<script src="logic-grid.js"></script>
 <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.6/css/bootstrap.css">
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
 <style>
 #game {
-    border : 1px solid black;
     width: 600px;
     height: 600px;
     position: relative;
-    background-color: yellow;
-}
-.player {
-    width: 32px;
-    height: 32px;
-    background-repeat:no-repeat;
-    padding: 0;
-    margin: 0;
-    position: absolute;
-}
-.player-name-box {
-    position: absolute;
-    text-align: center;
-    top: -20px;
-    left: -84px;
-    width: 200px;
-}
-.player .popover {
-    position: absolute;
 }
 </style>
 </head>
@@ -38,7 +20,7 @@
 <div class="container-fluid">
     <div class="row-fluid">
         <div class="col-md-8">
-            <div id="game"></div>
+            <canvas id="game" width="512" height="512"></canvas>
         </div>
         <div class="col-md-4">
             Name: <input type="text" id="name" value="nobody"><br>
@@ -54,12 +36,6 @@
         </div>
     </div>
 </div>
-<script id="tmpl-player" type="text/html">
-<div class="player">
-    <div class="player-name-box"><span class="player-name"></span></div>
-    <div class="popover fade top in" role="tooltip" style="display: none;"><div class="arrow" style="top: 100%;"></div><h3 class="popover-title"></h3><div class="popover-content"></div></div>
-</div>
-</script>
 <script>
 let connection = null;
 let room = null;
@@ -211,55 +187,10 @@ characters.map(function(c) {
 
 $('#character option').eq(Math.floor(Math.random() * characters.length)).prop('selected', true);
 
-var add_player = function(options){
-    var player_dom = $($('#tmpl-player').html());
-    player_dom.css('background-image', 'url("sprite/' + options.character + '.png")');
-	$('.player-name', player_dom).text(options.name);
-    player_dom.data('character', options.character);
-	$('#game').append(player_dom);
-    $('.popover-title', player_dom).text(options.name);
-    if ('undefined' !== typeof(options.left)) {
-        player_dom.css('left', options.left + 'px').css('top', options.top + 'px');
-    }
-    player_dom.data('moving', true);
-    return player_dom;
-};
-
-var player = add_player({
-	character: characters[0],
-	top: Math.floor(Math.random() * 400) + 100,
-	left: Math.floor(Math.random() * 400) + 100,
-	name: $('#name').val(),
-});
-
-var player_chat_resize = function(p){
-    if ($('.chat-message', p).length == 0) {
-        $('.popover', p).hide();
-        return;
-    }
-    $('.popover', p).css({
-        top: $('.popover', p).height() * -1,
-        left: -1 * Math.floor($('.popover', p).width() / 2) + 16,
-    });
-};
-
-var player_say = function(p, s, close_at){
-    $('.popover', p).show();
-    $('.popover-content', p).append(
-        $('<div></div>').addClass('chat-message').text(s).data('close_at', close_at)
-    );
-    player_chat_resize(p);
-};
-
-$('#game').on('click', '.chat-message', function(e){
-    var player_dom = $(this).parents('.player');
-    $(this).remove();
-    player_chat_resize(player_dom);
-});
-
 $('#character').change(function(e){
-    player.css('background-image', 'url("sprite/' + $(this).val() + '.png")');
-	player.data('character', $(this).val());
+	if ('undefined' !== typeof(Game.heroes)) {
+		Game.heroes.me.changeCharacter($(this).val());
+	}
     $('#character').blur();
 
 	if (room) {
@@ -268,24 +199,19 @@ $('#character').change(function(e){
 }).change();
 
 $('#name').keyup(function(e){
-    $('.player-name', player).text($(this).val());
-    $('.popover-title', player).text($(this).val());
+	Game.heroes.me.name = $(this).val();
 	if (room) {
 		room.setDisplayName($('#name').val());
 	}
 });
 
-// 37:left, 38:up, 39:right, 40:down
-var pressing = null;
-var pressing_start = null;
-
 $('#mic-switch').click(function(e){
     e.preventDefault();
-    if (player.data('audio-track').isMuted()) {
-        player.data('audio-track').unmute();
+    if (Game.heroes.me.audio_track.isMuted()) {
+        Game.hereos.me.audio_track.unmute();
         $('#mic-switch').text('Mic: on');
     } else {
-        player.data('audio-track').mute();
+        Game.hereos.me.audio_track.mute();
         $('#mic-switch').text('Mic: off');
     }
 
@@ -297,7 +223,7 @@ $('#joined-form').submit(function(e){
         var say = $('#say').val();
         room.sendTextMessage(say);
         $('#say').val('');
-        player_say(player, say, (new Date).getTime() + 20 * 1000);
+		Game.heroes.me.messages.push([say, (new Date).getTime() + 20 * 1000]);
     }
 });
 
@@ -308,131 +234,7 @@ $('body').keydown(function(e){
         }
         return;
     }
-    if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].indexOf(e.key) < 0) return;
-    if (pressing == e.key) return;
-    pressing = e.key;
-    pressing_start = null;
-}).keyup(function(e){
-    if (pressing == e.key) {
-        pressing = null;
-    }
 });
-
-var prev_update_pos = null;
-var moving_loop = function(){
-    var now = (new Date).getTime();
-    $('.chat-message').each(function(){
-        if ($(this).data('close_at') < now) {
-            $(this).click();
-        }
-    });
-
-    for (var id in players) {
-        if (!players[id].data('moving')) {
-            continue;
-        }
-        if ('undefined' === typeof(room.participants[id])) {
-            continue;
-        }
-        var pos = players[id].position();
-        var new_pos = {
-            left: (room.participants[id].getProperty('left')),
-            top: (room.participants[id].getProperty('top'))
-        };
-        if ('undefined' === typeof(new_pos.left)) {
-            continue;
-        }
-        new_pos.left = parseInt(new_pos.left);
-        new_pos.top = parseInt(new_pos.top);
-
-        if (pos.left == 0 && pos.top == 0) {
-            players[id].data('col', 0);
-            players[id].css('top', new_pos.top).css('left', new_pos.left);
-            players[id].css('background-position', (-1*col*32) + 'px ' + (-1*row*32) + 'px');
-            continue;
-        }
-
-        if (pos.left != new_pos.left) {
-            dy = 0;
-            dx = (new_pos.left > pos.left) ? 1 : -1;
-        } else if (pos.top != new_pos.top) {
-            dx = 0;
-            dy = (new_pos.top > pos.top) ? 1 : -1;
-        } else {
-            players[id].data('moving', false);
-            continue;
-        }
-
-        row = room.participants[id].getProperty('row');
-        if ('undefined' === typeof(row)) {
-            row = 0;
-        }
-        row = parseInt(row);
-
-        if (players[id].data('row') == row) {
-            var col = players[id].data('col');
-            col = (col + 1) % 3;
-        } else {
-            players[id].data('row', row);
-            var col = 0;
-        }
-        players[id].data('col', col);
-        players[id].css('top', pos.top + dy).css('left', pos.left + dx).css('z-index', pos.top);;
-		players[id].css('background-position', (-1*col*32) + 'px ' + (-1*row*32) + 'px');
-    }
-
-    if (pressing !== null) {
-        var dx = dy = 0;
-        var row = 0;
-        if (pressing == 'ArrowLeft') { // left
-            dx = -1;
-            dy = 0;
-            row = 1;
-        } else if (pressing == 'ArrowUp') { // up
-            dx = 0;
-            dy = -1;
-            row = 3;
-        } else if (pressing == 'ArrowRight') { // right
-            dx = 1;
-            dy = 0;
-            row = 2;
-        } else if (pressing == 'ArrowDown') { // down
-            dx = 0;
-            dy = 1;
-            row = 0;
-        }
-
-        pos = player.position();
-        if (pos.top + dy < 20) dy = 0;
-        if (pos.left + dx < 0) dx = 0;
-        if (pos.top + dy > 600 - 32) dy = 0;
-        if (pos.left + dx > 600 - 32) dx = 0;
-
-        if (player.data('row') == row) {
-            var col = player.data('col');
-            col = (col + 1) % 3;
-        } else {
-            player.data('row', row);
-            var col = 0;
-        }
-        player.data('col', col);
-        player.css('top', pos.top + dy).css('left', pos.left + dx).css('z-index', pos.top + dy);
-		player.css('background-position', (-1*col*32) + 'px ' + (-1*row*32) + 'px');
-
-    }
-
-	if (room) {
-		if (prev_update_pos === null || (new Date).getTime() - prev_update_pos > 100) {
-			room.setLocalParticipantProperty('top', player.position().top);
-			room.setLocalParticipantProperty('left', player.position().left);
-			room.setLocalParticipantProperty('row', player.data('row'));
-			prev_update_pos = (new Date).getTime();
-		}
-	}
-    setTimeout(moving_loop, 10);
-};
-
-moving_loop();
 
 function onConnectionFailed() {
     alert('Connection Failed!');
@@ -457,43 +259,33 @@ function onLocalTracks(tracks) {
         if (tracks[i].getType() === 'video') {
             // TODO
         } else {
-            player.data('audio-track', tracks[i]);
+			Game.heroes.me.audio_track = tracks[i];
             room.addTrack(tracks[i]);
             tracks[i].addEventListener(JitsiMeetJS.events.track.TRACK_AUDIO_LEVEL_CHANGED, function(audioLevel) {
-                if (!player.data('audio-track').isMuted()) {
-                    level_changed(player, audioLevel);
+                if (!Game.heroes.me.audio_track.isMuted()) {
+					Game.heroes.me.audioLevel = audioLevel;
                 }
             });
         }
     }
 }
 
-var level_changed = function(player_dom, audioLevel){
-    $('.player-name', player_dom).css('background-color', 'rgba(0,0,0,' + audioLevel + ')');
-};
-
-var players = {};
-
 function update_member_list() {
     for (var id in room.participants) {
         var participant = room.participants[id];
-		if ('undefined' === typeof(players[id])) {
-			players[id] = add_player({
-				character: participant.getProperty('character'),
-				top: participant.getProperty('top'),
-				left: participant.getProperty('left'),
-				name: participant.getDisplayName(),
-				id: id,
-			});
+		if ('undefined' === typeof(Game.heroes[id])) {
+			x = parseInt(participant.getProperty('left'));
+			y = parseInt(participant.getProperty('top'));
+			Game.heroes[id] = new Hero(map, x, y, participant.getProperty('character'), participant.getDisplayName());
 		}
 	}
 }
 
 function onConferenceJoined() {
     room.setDisplayName($('#name').val());
-	room.setLocalParticipantProperty('character', player.data('character'));
-	room.setLocalParticipantProperty('top', player.position().top);
-	room.setLocalParticipantProperty('left', player.position().left);
+	room.setLocalParticipantProperty('character', $('#character').val());
+	room.setLocalParticipantProperty('top', Game.heroes.me.y);
+	room.setLocalParticipantProperty('left', Game.heroes.me.x);
 	update_member_list();
 
     room.on(JitsiMeetJS.events.conference.USER_JOINED, (id, user) => {
@@ -501,31 +293,35 @@ function onConferenceJoined() {
     });
 
     room.on(JitsiMeetJS.events.conference.MESSAGE_RECEIVED, (id, text, ts, nick, other) => {
-        if ('undefined' !== typeof(players[id])) {
+        if ('undefined' !== typeof(Game.heroes[id])) {
             if ('undefined' === typeof(ts)) {
                 ts_number = (new Date).getTime();
             } else {
                 ts_number = (new Date(ts)).getTime();
             }
             if (ts_number + 20 * 1000 < (new Date).getTime()) return;
-            player_say(players[id], text, ts_number + 20 * 1000);
+			Game.heroes[id].messages.push([text, ts_number + 20 * 1000]);
         }
     });
 
     room.on(JitsiMeetJS.events.conference.USER_LEFT, (id, user) => {
-		players[id].remove();
-		delete(players[id]);
+		delete(Game.heroes[id]);
     });
 
     room.on(JitsiMeetJS.events.conference.PARTICIPANT_PROPERTY_CHANGED, (user, text, ts) => {
 		var id = user.getId();
-		if (['top', 'left', 'row'].indexOf(text) >= 0) {
-			if ('undefined' !== typeof(players[id])) {
-				players[id].data('moving', true);
-			}
-		} else if ('character' == text) {
-			if ('undefined' !== typeof(players[id])) {
-				players[id].css('background-image', 'url("sprite/' + room.participants[id].getProperty('character') + '.png")');
+		if (['top', 'left', 'character'].indexOf(text) >= 0) {
+			if ('undefined' !== typeof(Game.heroes[id])) {
+				var x, y;
+				Game.heroes[id].target_x = x = parseInt(room.participants[id].getProperty('left'));
+				Game.heroes[id].target_y = y = parseInt(room.participants[id].getProperty('top'));
+				if (Game.heroes[id].x == Game.heroes[id].y && Game.heroes[id].x == 0) {
+					Game.heroes[id].x = x;
+					Game.heroes[id].y = y;
+				}
+				if (Game.heroes[id].character != room.participants[id].getProperty('character')) {
+					Game.heroes[id].changeCharacter(room.participants[id].getProperty('character'));
+				}
 			}
 		} else {
 			console.log(text);
@@ -533,13 +329,12 @@ function onConferenceJoined() {
     });
 
     room.on(JitsiMeetJS.events.conference.DISPLAY_NAME_CHANGED, (id, user) => {
-		$('.player-name' ,players[id]).text(user);
-        $('.popover-title', players[id]).text(user);
+		Game.heroes[id].name = user;
     });
 
     room.on(JitsiMeetJS.events.conference.TRACK_AUDIO_LEVEL_CHANGED, (id, audioLevel) => {
-        if ('undefined' !== typeof(players[id])) {
-            level_changed(players[id], audioLevel);
+        if ('undefined' !== typeof(Game.heroes[id])) {
+			Game.heroes[id].audioLevel = audioLevel;
         }
     });
 }
