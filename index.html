@@ -208,10 +208,10 @@ $('#name').keyup(function(e){
 $('#mic-switch').click(function(e){
     e.preventDefault();
     if (Game.heroes.me.audio_track.isMuted()) {
-        Game.hereos.me.audio_track.unmute();
+        Game.heroes.me.audio_track.unmute();
         $('#mic-switch').text('Mic: on');
     } else {
-        Game.hereos.me.audio_track.mute();
+        Game.heroes.me.audio_track.mute();
         $('#mic-switch').text('Mic: off');
     }
 
