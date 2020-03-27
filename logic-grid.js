@@ -380,8 +380,11 @@ Game.drawGroundLayer = function () {
             var x = (c - startCol) * map.tsize + offsetX;
             var y = (r - startRow) * map.tsize + offsetY;
             if (tile !== null) { // 'undefined' !== typeof(tile_map[tile])) { // 0 => empty tile
-				tileX = tile_map['ground'][0];
-				tileY = tile_map['ground'][1];
+                if ('undefined' === typeof(tile_map[tile])) {
+                    tile = 'ground';
+                }
+				tileX = tile_map[tile][0];
+				tileY = tile_map[tile][1];
                 this.ctx.drawImage(
                     this.tileAtlas, // image
                     tileX * map.tsize, // source x
