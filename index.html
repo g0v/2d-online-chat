@@ -32,10 +32,12 @@
             <form id="joined-form" style="display:none" autocomplete="off">
                 <div>Say: <input type="text" id="say" placeholder="say something?"></div>
                 <button id="mic-switch" type="button">Mic: on</button>
+                <button id="cam-switch" type="button">Camera: off</button>
             </form>
         </div>
     </div>
 </div>
+<div id="video-pool" style="display:none"></div>
 <script>
 let connection = null;
 let room = null;
@@ -205,6 +207,26 @@ $('#name').keyup(function(e){
 	}
 });
 
+$('#cam-switch').click(function(e){
+    e.preventDefault();
+	if (!Game.heroes.me.camera_track) {
+        JitsiMeetJS.createLocalTracks({ devices: [ 'video' ] })
+            .then(onLocalTracks)
+            .catch(error => {
+                alert('權限錯誤 Permission Error: 無法得到攝影機權限 Error obtaining camera permission. ' + error);
+		});
+	} else {
+		Game.heroes.me.camera_track.mute().then(function(){
+			Game.heroes.me.camera_track.dispose();
+			Game.heroes.me.camera_track.detach(Game.heroes.me.video_dom);
+			delete(Game.heroes.me.video_dom);
+			delete(Game.heroes.me.camera_track);
+			$('#cam-switch').text('Camera: off');
+		});
+	}
+
+});
+
 $('#mic-switch').click(function(e){
     e.preventDefault();
     if (Game.heroes.me.audio_track.isMuted()) {
@@ -214,7 +236,6 @@ $('#mic-switch').click(function(e){
         Game.heroes.me.audio_track.mute();
         $('#mic-switch').text('Mic: off');
     }
-
 });
 
 $('#joined-form').submit(function(e){
@@ -250,14 +271,27 @@ function onRemoteTrack(track) {
         track.attach($(`#audio-${participant}`)[0]);
 
     } else if (track.getType() == 'video') {
-        // TODO
+		if (!Game.heroes[participant].video_dom) {
+			Game.heroes[participant].video_dom = $('<video autoplay="1"></video>')[0];
+			Game.heroes[participant].video_track = track;
+			$('#video-pool').append(Game.heroes[participant].video_dom);
+		}
+		track.attach(Game.heroes[participant].video_dom);
     }
 }
 
 function onLocalTracks(tracks) {
     for (let i = 0; i < tracks.length; i++) {
         if (tracks[i].getType() === 'video') {
-            // TODO
+			Game.heroes.me.camera_track = tracks[i];
+			room.addTrack(tracks[i]);
+			if (!Game.heroes.me.video_dom) {
+				Game.heroes.me.video_dom = $('<video autoplay="1"></video>')[0];
+				Game.heroes.me.video_track = tracks[i];
+				$('#video-pool').append(Game.heroes.me.video_dom);
+			}
+			$('#cam-switch').text('Camera: on');
+			tracks[i].attach(Game.heroes.me.video_dom);
         } else {
 			Game.heroes.me.audio_track = tracks[i];
             room.addTrack(tracks[i]);

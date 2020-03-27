@@ -556,6 +556,19 @@ Game._drawHeroes = function(){
 				);
 			}
 		}
+
+		// video
+		if (Game.heroes[id].video_dom) {
+			var videoSettings = Game.heroes[id].video_track.getTrack().getSettings();
+			var maxSide = Math.max(videoSettings.height, videoSettings.width);
+			var width = Math.floor(100 * videoSettings.width / maxSide);
+			var height = Math.floor(100 * videoSettings.height / maxSide);
+			this.ctx.drawImage(Game.heroes[id].video_dom,
+				this.heroes[id].screenX - width / 2,
+				this.heroes[id].screenY - height - 40,
+				width, height 
+			);
+		}
 	}
 };
 
