@@ -179,7 +179,7 @@ function Hero(map, x, y, character, name) {
 	}
 }
 
-Hero.SPEED = 128; // pixels per second
+Hero.SPEED = 256; // pixels per second
 
 Hero.prototype.changeCharacter = function(character) {
 	this.character = character;
