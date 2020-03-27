@@ -314,8 +314,14 @@ Game.update = function (delta) {
 
 	if (room) {
 		if (prev_update_pos === null || (new Date).getTime() - prev_update_pos > 100) {
-			room.setLocalParticipantProperty('top', this.heroes.me.y);
-			room.setLocalParticipantProperty('left', this.heroes.me.x);
+			if (this.heroes.me.y_sent != this.heroes.me.y) {
+				this.heroes.me.y_sent = this.heroes.me.y;
+				room.setLocalParticipantProperty('top', parseInt(this.heroes.me.y));
+			}
+			if (this.heroes.me.x_sent != this.heroes.me.x) {
+				this.heroes.me.x_sent = this.heroes.me.x;
+				room.setLocalParticipantProperty('left', parseInt(this.heroes.me.x));
+			}
 			prev_update_pos = (new Date).getTime();
 		}
 	}

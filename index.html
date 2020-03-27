@@ -284,8 +284,8 @@ function update_member_list() {
 function onConferenceJoined() {
     room.setDisplayName($('#name').val());
 	room.setLocalParticipantProperty('character', $('#character').val());
-	room.setLocalParticipantProperty('top', Game.heroes.me.y);
-	room.setLocalParticipantProperty('left', Game.heroes.me.x);
+	room.setLocalParticipantProperty('top', parseInt(Game.heroes.me.y));
+	room.setLocalParticipantProperty('left', parseInt(Game.heroes.me.x));
 	update_member_list();
 
     room.on(JitsiMeetJS.events.conference.USER_JOINED, (id, user) => {
