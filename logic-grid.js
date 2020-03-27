@@ -284,11 +284,14 @@ Game.init = function () {
         [Keyboard.LEFT, Keyboard.RIGHT, Keyboard.UP, Keyboard.DOWN]);
     this.tileAtlas = Loader.getImage('tiles');
 
+    var width = $('body').width();
+    var height = window.innerHeight;
+    $('#game').attr('width', width).attr('height', height);
     this.heroes = {};
     var character = $('#character').val();
 	var name = $('#name').val();
 	this.heroes.me = new Hero(map, 160, 160, character, name);
-    this.camera = new Camera(map, 512, 512);
+    this.camera = new Camera(map, width, height);
     this.camera.follow(this.heroes.me);
 };
 
