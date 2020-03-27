@@ -198,7 +198,7 @@ Hero.prototype.move = function (delta, dirx, diry) {
     this.x += dirx * Hero.SPEED * delta;
     this.y += diry * Hero.SPEED * delta;
     if (dirx || diry) {
-        this.col = (this.col + 1) % 3;
+        this.col += Hero.SPEED * delta;
     }
 
     // check if we walked into a non-walkable tile
@@ -228,7 +228,7 @@ Hero.prototype.otherMove = function (delta) {
     this.y += deltaY;
     if (deltaX || deltaY) {
 		this.row = row;
-        this.col = (this.col + 1) % 3;
+        this.col += Math.max(deltaX, deltaY);
     }
 };
 
@@ -461,9 +461,10 @@ Game._drawHeroes = function(){
 			this.heroes[id].screenX = this.heroes[id].x - Game.camera.x;
 			this.heroes[id].screenY = this.heroes[id].y - Game.camera.y;
 		}
+		col = Math.floor(this.heroes[id].col / 50) % 3;
 		this.ctx.drawImage(
 			this.heroes[id].image,
-			this.heroes[id].col * 32, this.heroes[id].row * 32, 32, 32,
+			col * 32, this.heroes[id].row * 32, 32, 32,
 			this.heroes[id].screenX - this.heroes[id].width / 2,
 			this.heroes[id].screenY - this.heroes[id].height / 2,
 			32, 32
