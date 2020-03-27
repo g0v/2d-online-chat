@@ -42,6 +42,10 @@
 let connection = null;
 let room = null;
 
+if (localStorage.getItem('name')) {
+    $('#name').val(localStorage.getItem('name'));
+}
+
 if (location.search.match(/room=([^&]*)/)) {
     var matches = location.search.match(/room=([^&]*)/);
     $('input[name="room-name"]').val(matches[1]);
@@ -201,6 +205,7 @@ $('#character').change(function(e){
 }).change();
 
 $('#name').keyup(function(e){
+    localStorage.setItem('name', $('#name').val());
 	Game.heroes.me.name = $(this).val();
 	if (room) {
 		room.setDisplayName($('#name').val());
