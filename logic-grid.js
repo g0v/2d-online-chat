@@ -27,7 +27,28 @@ var map = {
 };
 
 var tile_map = {
+    'screen_lt': [34,34],
+    'screen_t': [36,34],
+    'screen_rt': [35,34],
+    'screen_l': [36,35],
+    'screen_c': [38,34],
+    'screen_r': [37,34],
+    'screen_lb': [34,35],
+    'screen_b': [37,35],
+    'screen_rb': [35,35],
+    'carpet1_1': [2,11],
+    'carpet1_2': [3,11],
+    'carpet1_3': [5,11],
+    'computer_table1': [12,3],
+    'computer_table2': [12,4],
 	'ground': [18,1],
+    'ground1': [1,0],
+    'ground2': [2,0],
+    'ground3': [3,0],
+    'ground4': [4,0],
+    'ground5': [5,0],
+    'ground6': [6,0],
+    'ground7': [7,0],
 	'pile': [7,6],
 	'wall_': [0,2],
 	'wall_l': [2,2],
@@ -48,28 +69,9 @@ var tile_map = {
 	'roof_dl': [9,1],
 	'roof_udl': [5,2],
 	'roof_rdl': [5,1],
-	'roof_urdl': [17,1],
+	'roof_urdl': [15,2],
 	'chair': [10, 13],
 };
-for (var r = 0; r < map.rows; r ++) {
-    for (var c = 0; c < map.cols; c ++) {
-	if (!((c == 10 || c == 0 || c == map.cols - 1) && r == 0) && (c == 10 || r == 10 || c == 0 || r == 1 || c == map.cols - 1 || r == map.rows - 1)) {
-         map.layers['ground'][r * map.cols + c] = 'ground';
-         map.layers['wall'][r * map.cols + c] = true;
-     } else {
-         map.layers['ground'][r * map.cols + c] = 'ground';
-         map.layers['wall'][r * map.cols + c] = false;
-     }
-  }
-}
-
-map.layers['wall'][10 * map.cols + 7] = false;
-map.layers['wall'][10 * map.cols + 6] = false;
-map.layers['wall'][13 * map.cols + 10] = false;
-map.layers['wall'][14 * map.cols + 10] = false;
-map.layers['wall'][6 * map.cols + 10] = false;
-map.layers['wall'][7 * map.cols + 10] = false;
-map.layers['object'][8 * map.cols + 8] = 'chair';
 
 function calculateWallLayer() {
 	map.layers['calculate_wall'] = [];
@@ -105,7 +107,11 @@ function calculateWallLayer() {
 		}
 	}
 };
-calculateWallLayer();
+
+$.get('room.json', function(room) {
+    map.layers = room;
+    calculateWallLayer();
+}, 'json');
 
 function Camera(map, width, height) {
     this.x = 0;
