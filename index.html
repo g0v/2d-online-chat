@@ -24,7 +24,24 @@ body {
     right: 0px;
     top: 0px;
     opacity: 80%;
+    display: flex;
+    flex-direction: column;
 }
+
+#controller .panel-heading {
+    flex: 1;
+}
+#controller .panel-body {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 100;
+}
+.panel-tab {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
 </style>
 </head>
 <body>
@@ -32,18 +49,45 @@ body {
 <div class="panel panel-default" id="controller">
     <div class="panel-heading">Jothon Online 2D RPG</div>
     <div class="panel-body">
-    Name: <input type="text" id="name" value="nobody"><br>
-    Character: <select id="character"></select>
-    <form id="room-form">
-        Room: <input type="text" name="room-name" value="chat2d">
-        <button type="submit">Join</button>
-    </form>
-    <form id="joined-form" style="display:none" autocomplete="off">
-        <div>Say: <input type="text" id="say" placeholder="say something?"></div>
-        <button id="mic-switch" type="button">Mic: on</button>
-        <button id="cam-switch" type="button">Camera: off</button>
-    </form>
-</div>
+        <form id="joined-form" style="flex: 1; display:none" autocomplete="off">
+            <div>Say: <input type="text" id="say" placeholder="say something?"></div>
+            <button id="mic-switch" type="button">Mic: on</button>
+            <button id="cam-switch" type="button">Camera: off</button>
+        </form>
+        <ul class="nav nav-tabs" style="flex: 1">
+            <li role="presentation" class="nav-tab active" id="nav-tab-info"><a href="#">Info</a></li>
+            <li role="presentation" class="nav-tab" id="nav-tab-chat"><a href="#">Chat</a></li>
+            <li role="presentation" class="nav-tab" id="nav-tab-member"><a href="#">Members(<span id="member-count">0</span>)</a></li>
+        </ul>
+
+        <div class="panel-tab" id="panel-tab-info">
+            <div>
+                Name: <input type="text" id="name" value="nobody"><br>
+                Character: <select id="character"></select>
+                <form id="room-form">
+                    Room: <input type="text" name="room-name" value="chat2d">
+                    <button type="submit">Join</button>
+                </form>
+            </div>
+            Log:<br>
+            <textarea readonly="readonly" id="log" style="width: 100%; flex-grow: 2"></textarea>
+        </div>
+        <div class="panel-tab" id="panel-tab-chat" style="display: none">
+            <textarea id="chat" readonly="readonly" style="height:100%; width: 100%"></textarea>
+        </div>
+        <div class="panel-tab" id="panel-tab-member" style="display: none">
+            <ul id="member-list"></ul>
+        </div>
+    </div>
+    <script>
+        $('.nav-tab').click(function(e){
+                e.preventDefault();
+                $('.panel-tab').hide();
+                $('#panel-tab-' + $(this).attr('id').split('-')[2]).show();
+                $('.nav-tab').removeClass('active');
+                $(this).addClass('active');
+        });
+    </script>
 </div>
 <div id="video-pool" style="display:none"></div>
 <script>
@@ -326,20 +370,44 @@ function update_member_list() {
 			Game.heroes[id] = new Hero(map, x, y, participant.getProperty('character'), participant.getDisplayName());
 		}
 	}
+    $('#member-list').html('');
+    c = 0;
+    for (var id in Game.heroes) {
+        var li_dom = $('<li></li>');
+        var span_dom = $('<span></span>').css({
+            width: 32,
+            height: 32,
+            display: 'inline-block',
+            'background-image': 'url("sprite/' + Game.heroes[id].character + '.png")',
+            'background-position': '0px 0px',
+        });
+        li_dom.append(span_dom);
+        li_dom.append($('<span></span>').text(Game.heroes[id].name));
+
+        $('#member-list').append(li_dom);
+        c ++;
+    }
+    $('#member-count').text(c);
+}
+
+function addLog(log) {
+    $('#log').val($.trim($('#log').val() + "\n" + log));
+    $('#log').scrollTop($('#log')[0].scrollHeight - $('#log').height());
+
 }
 
 function onConferenceJoined() {
-    room.setDisplayName($('#name').val());
-	room.setLocalParticipantProperty('character', $('#character').val());
-	room.setLocalParticipantProperty('top', parseInt(Game.heroes.me.y));
-	room.setLocalParticipantProperty('left', parseInt(Game.heroes.me.x));
 	update_member_list();
 
     room.on(JitsiMeetJS.events.conference.USER_JOINED, (id, user) => {
+        addLog(user.getDisplayName() + ' joined');
 		update_member_list();
     });
 
     room.on(JitsiMeetJS.events.conference.MESSAGE_RECEIVED, (id, text, ts, nick, other) => {
+        $('#chat').val($.trim($('#chat').val() + "\n" + nick + ":" + text));
+        $('#chat').scrollTop($('#chat')[0].scrollHeight - $('#chat').height());
+
         if ('undefined' !== typeof(Game.heroes[id])) {
             if ('undefined' === typeof(ts)) {
                 ts_number = (new Date).getTime();
@@ -352,7 +420,9 @@ function onConferenceJoined() {
     });
 
     room.on(JitsiMeetJS.events.conference.USER_LEFT, (id, user) => {
+        addLog(user.getDisplayName() + ' left');
 		delete(Game.heroes[id]);
+        update_member_list();
     });
 
     room.on(JitsiMeetJS.events.conference.PARTICIPANT_PROPERTY_CHANGED, (user, text, ts) => {
@@ -372,6 +442,7 @@ function onConferenceJoined() {
 				}
 				if (Game.heroes[id].character != room.participants[id].getProperty('character')) {
 					Game.heroes[id].changeCharacter(room.participants[id].getProperty('character'));
+                    update_member_list();
 				}
 			}
 		} else {
@@ -379,8 +450,10 @@ function onConferenceJoined() {
 		}
     });
 
-    room.on(JitsiMeetJS.events.conference.DISPLAY_NAME_CHANGED, (id, user) => {
+    room.on(JitsiMeetJS.events.conference.DISPLAY_NAME_CHANGED, (id, name) => {
+        addLog(Game.heroes[id].name + ' changed name to ' + name);
 		Game.heroes[id].name = user;
+        update_member_list();
     });
 
     room.on(JitsiMeetJS.events.conference.TRACK_AUDIO_LEVEL_CHANGED, (id, audioLevel) => {
@@ -392,6 +465,10 @@ function onConferenceJoined() {
 
 function onConnectionSuccess() {
     room = connection.initJitsiConference(confOptions.confID, confOptions);
+    room.setDisplayName($('#name').val());
+	room.setLocalParticipantProperty('character', $('#character').val());
+	room.setLocalParticipantProperty('top', parseInt(Game.heroes.me.y));
+	room.setLocalParticipantProperty('left', parseInt(Game.heroes.me.x));
     room.on(JitsiMeetJS.events.conference.TRACK_ADDED, onRemoteTrack);
     room.on(JitsiMeetJS.events.conference.TRACK_REMOVED, track => {
         console.log(`track removed!!!${track}`);
