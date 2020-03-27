@@ -79,6 +79,7 @@ var Game = {};
 
 Game.run = function (context) {
     this.ctx = context;
+    this.ctx.font = '14px sans-serif';
     this._previousElapsed = 0;
 
     var p = this.load();
