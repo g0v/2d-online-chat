@@ -89,7 +89,9 @@ Game.run = function (context) {
     }.bind(this));
 };
 
+Game.stop = false;
 Game.tick = function (elapsed) {
+    if (Game.stop) return;
     window.requestAnimationFrame(this.tick);
 
     // clear previous frame
