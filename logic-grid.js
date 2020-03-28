@@ -26,53 +26,6 @@ var map = {
     }
 };
 
-var tile_map = {
-    'screen_lt': [34,34],
-    'screen_t': [36,34],
-    'screen_rt': [35,34],
-    'screen_l': [36,35],
-    'screen_c': [38,34],
-    'screen_r': [37,34],
-    'screen_lb': [34,35],
-    'screen_b': [37,35],
-    'screen_rb': [35,35],
-    'carpet1_1': [2,11],
-    'carpet1_2': [3,11],
-    'carpet1_3': [5,11],
-    'computer_table1': [12,3],
-    'computer_table2': [12,4],
-	'ground': [18,1],
-    'ground1': [1,0],
-    'ground2': [2,0],
-    'ground3': [3,0],
-    'ground4': [4,0],
-    'ground5': [5,0],
-    'ground6': [6,0],
-    'ground7': [7,0],
-	'pile': [7,6],
-	'wall_': [0,2],
-	'wall_l': [2,2],
-	'wall_r': [1,2],
-	'wall_lr': [3,2],
-	'roof_': [14,1],
-	'roof_u': [7,2],
-	'roof_r': [1,1],
-	'roof_ur': [8,2],
-	'roof_d': [7,1],
-	'roof_ud': [10,2],
-	'roof_rd': [8,1],
-	'roof_urd': [6,1],
-	'roof_l': [2,1],
-	'roof_ul': [9,2],
-	'roof_rl': [10,1],
-	'roof_url': [6,2],
-	'roof_dl': [9,1],
-	'roof_udl': [5,2],
-	'roof_rdl': [5,1],
-	'roof_urdl': [15,2],
-	'chair': [10, 13],
-};
-
 $.get('room.json', function(room) {
     map.layers = room;
     calculateWallLayer();
