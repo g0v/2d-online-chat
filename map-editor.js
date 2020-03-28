@@ -51,6 +51,11 @@ Game.loadSample = function(){
 };
 
 function updateLayerConfig(){
+    for (var id in map.layers) {
+        if (id.match(/^calculate_/)) {
+            delete(map.layers[id]);
+        }
+    }
     $('#result').val(JSON.stringify(map.layers));
     localStorage.setItem('config', JSON.stringify(map.layers));
     calculateWallLayer();
