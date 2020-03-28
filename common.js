@@ -173,3 +173,38 @@ Game._drawGrid = function () {
     }
 };
 
+function calculateWallLayer() {
+	map.layers['calculate_wall'] = [];
+	for (var c = map.cols - 1; c >= 0; c --) {
+		for (var r = 0; r < map.rows; r ++) {
+			if (true === map.layers['wall'][(r + 1) * map.cols + c]) {
+				var t = 'roof_'
+				if (true === map.layers['wall'][r * map.cols + c]) {
+					t += 'u';
+				}
+				if (c < map.cols - 1 && true === map.layers['wall'][(r + 1) * map.cols + c + 1]) {
+				    t += 'r';
+				}
+				if (true === map.layers['wall'][(r + 2) * map.cols + c]) {
+					t += 'd';
+				}
+				if (c > 0 && true === map.layers['wall'][(r + 1) * map.cols + c - 1]) {
+					t += 'l';
+				}
+				map.layers['calculate_wall'][r * map.cols + c] = t;
+			} else if (true === map.layers['wall'][r * map.cols + c]) {
+				t = 'wall_';
+				if (c > 0 && true === map.layers['wall'][ r * map.cols + c - 1]) {
+					t += 'l';
+				}
+				if (c < map.cols - 1 && true === map.layers['wall'][ r * map.cols + c + 1]) {
+					t += 'r';
+				}
+				map.layers['calculate_wall'][r * map.cols + c] = t;
+			} else {
+				map.layers['calculate_wall'][r * map.cols + c] = false;
+			}
+		}
+	}
+};
+
