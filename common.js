@@ -150,3 +150,25 @@ Game.drawObject = function () {
     }
 };
 
+Game._drawGrid = function () {
+	var width = map.cols * map.tsize;
+    var height = map.rows * map.tsize;
+    var x, y;
+    for (var r = 0; r < map.rows; r++) {
+        x = - this.camera.x;
+        y = r * map.tsize - this.camera.y;
+        this.ctx.beginPath();
+        this.ctx.moveTo(x, y);
+        this.ctx.lineTo(width, y);
+        this.ctx.stroke();
+    }
+    for (var c = 0; c < map.cols; c++) {
+        x = c * map.tsize - this.camera.x;
+        y = - this.camera.y;
+        this.ctx.beginPath();
+        this.ctx.moveTo(x, y);
+        this.ctx.lineTo(x, height);
+        this.ctx.stroke();
+    }
+};
+
