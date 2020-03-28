@@ -450,6 +450,15 @@ function onConferenceJoined() {
 		}
     });
 
+    room.on(JitsiMeetJS.events.conference.ENDPOINT_MESSAGE_RECEIVED, (participant, message) => {
+        if (message.type == 'teleport') {
+			var id = participant.getId();
+			if ('undefined' !== typeof(Game.heroes[id])) {
+				Game.heroes[id].x = Game.heroes[id].target_x = message.message[0];
+				Game.heroes[id].y = Game.heroes[id].target_y = message.message[1];
+			}
+        }
+    });
     room.on(JitsiMeetJS.events.conference.DISPLAY_NAME_CHANGED, (id, name) => {
         addLog(Game.heroes[id].name + ' changed name to ' + name);
 		Game.heroes[id].name = user;

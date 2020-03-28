@@ -211,6 +211,16 @@ Game.init = function () {
 	this.heroes.me = new Hero(map, 160, 160, character, name);
     this.camera = new Camera(map, width, height);
     this.camera.follow(this.heroes.me);
+
+    document.getElementById('game').onmouseup = function(){
+        var x = Math.floor((Game.mouse[0] + Game.camera.x) / 32) * 32 + 16;
+        var y = Math.floor((Game.mouse[1] + Game.camera.y) / 32) * 32 + 16;
+        Game.heroes.me.x = x;
+        Game.heroes.me.y = y;
+        if (room) {
+            room.broadcastEndpointMessage({type:"teleport",message:[x,y]});
+        }
+    };
 };
 
 var prev_update_pos = null;
@@ -273,4 +283,14 @@ Game.render = function () {
             Game.ctx[object[1]].apply(Game.ctx, object[2]);
         }
     });
+    if (null !== Game.mouse && 'undefined' !== typeof(Game.mouse)) {
+        var x = Math.floor((Game.mouse[0] + this.camera.x) / 32) * 32;
+		var y = Math.floor((Game.mouse[1] + this.camera.y) / 32) * 32;
+		if (x < map.cols * map.tsize && y < map.rows * map.tsize) {
+			this.ctx.beginPath();
+			this.ctx.rect(x - this.camera.x, y - this.camera.y, 32, 32);
+			this.ctx.stroke();
+		}
+    }
 };
+
