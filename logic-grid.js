@@ -404,38 +404,6 @@ Game.drawGroundLayer = function () {
     }
 };
 
-Game.drawObject = function () {
-    var startCol = Math.floor(this.camera.x / map.tsize);
-    var endCol = startCol + (this.camera.width / map.tsize);
-    var startRow = Math.floor(this.camera.y / map.tsize);
-    var endRow = startRow + (this.camera.height / map.tsize);
-    var offsetX = -this.camera.x + startCol * map.tsize;
-    var offsetY = -this.camera.y + startRow * map.tsize;
-
-    for (var c = startCol; c <= endCol; c++) {
-        for (var r = startRow; r <= endRow; r++) {
-            var tile = map.getTile('object', c, r);
-            var x = (c - startCol) * map.tsize + offsetX;
-            var y = (r - startRow) * map.tsize + offsetY;
-            if (tile !== null && 'undefined' !== typeof(tile_map[tile])) {
-				tileX = tile_map[tile][0];
-				tileY = tile_map[tile][1];
-                this.ctx.drawImage(
-                    this.tileAtlas, // image
-                    tileX * map.tsize, // source x
-                    tileY * map.tsize, // source y
-                    map.tsize, // source width
-                    map.tsize, // source height
-                    Math.round(x),  // target x
-                    Math.round(y), // target y
-                    map.tsize, // target width
-                    map.tsize // target height
-                );
-            }
-        }
-    }
-};
-
 Game._drawGrid = function () {
 	var width = map.cols * map.tsize;
     var height = map.rows * map.tsize;
