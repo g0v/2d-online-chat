@@ -255,3 +255,15 @@ var tile_map = {
 	'chair': [10, 13],
 };
 
+var tile_groups = {
+    ground: [
+        ['ground', 'ground1', 'ground2', 'ground3', 'ground4', 'ground5', 'ground6', 'ground7']
+    ],
+    object: [
+        ['chair', 'carpet1_1', 'carpet1_2', 'carpet1_3'],
+        ['screen_lt', 'screen_t', 'screen_rt', 'computer_table1'],
+        ['screen_l', 'screen_c', 'screen_r', 'computer_table2'],
+        ['screen_lb', 'screen_b', 'screen_rb'],
+    ]
+};
+
