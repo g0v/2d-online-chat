@@ -154,6 +154,7 @@ Game._drawGrid = function () {
 	var width = map.cols * map.tsize;
     var height = map.rows * map.tsize;
     var x, y;
+    this.ctx.lineWidth = 0.5;
     for (var r = 0; r < map.rows; r++) {
         x = - this.camera.x;
         y = r * map.tsize - this.camera.y;
