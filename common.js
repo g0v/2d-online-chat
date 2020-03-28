@@ -120,7 +120,7 @@ window.onload = function () {
     Game.run(context);
 };
 
-Game.drawObject = function () {
+Game.getDrawingObjects = function () {
     var startCol = Math.floor(this.camera.x / map.tsize);
     var endCol = Math.min(map.cols - 1, startCol + (this.camera.width / map.tsize));
     var startRow = Math.floor(this.camera.y / map.tsize);
@@ -128,6 +128,7 @@ Game.drawObject = function () {
     var offsetX = -this.camera.x + startCol * map.tsize;
     var offsetY = -this.camera.y + startRow * map.tsize;
 
+    var objects = [];
     for (var c = startCol; c <= endCol; c++) {
         for (var r = startRow; r <= endRow; r++) {
             var tile = map.getTile('object', c, r);
@@ -136,7 +137,10 @@ Game.drawObject = function () {
             if (tile !== null && 'undefined' !== typeof(tile_map[tile])) {
 				tileX = tile_map[tile][0];
 				tileY = tile_map[tile][1];
-                this.ctx.drawImage(
+                objects.push([
+                    r * 32,
+                    'drawImage',
+                    [
                     this.tileAtlas, // image
                     tileX * map.tsize, // source x
                     tileY * map.tsize, // source y
@@ -146,10 +150,12 @@ Game.drawObject = function () {
                     Math.round(y), // target y
                     map.tsize, // target width
                     map.tsize // target height
-                );
+                    ]
+                ]);
             }
         }
     }
+    return objects;
 };
 
 Game._drawGrid = function () {
@@ -177,6 +183,7 @@ Game._drawGrid = function () {
 
 function calculateWallLayer() {
 	map.layers['calculate_wall'] = [];
+    map.layers['calculate_wall_base'] = [];
 	for (var c = map.cols - 1; c >= 0; c --) {
 		for (var r = 0; r < map.rows; r ++) {
 			if (true === map.layers['wall'][(r + 1) * map.cols + c]) {
@@ -194,6 +201,7 @@ function calculateWallLayer() {
 					t += 'l';
 				}
 				map.layers['calculate_wall'][r * map.cols + c] = t;
+                map.layers['calculate_wall_base'][r * map.cols + c] = r + 1;
 			} else if (true === map.layers['wall'][r * map.cols + c]) {
 				t = 'wall_';
 				if (c > 0 && true === map.layers['wall'][ r * map.cols + c - 1]) {
@@ -203,6 +211,7 @@ function calculateWallLayer() {
 					t += 'r';
 				}
 				map.layers['calculate_wall'][r * map.cols + c] = t;
+                map.layers['calculate_wall_base'][r * map.cols + c] = r;
 			} else {
 				map.layers['calculate_wall'][r * map.cols + c] = false;
 			}
@@ -304,7 +313,7 @@ Game.drawGroundLayer = function () {
     }
 };
 
-Game.drawWall = function () {
+Game.getDrawingWalls = function () {
     var startCol = Math.floor(this.camera.x / map.tsize);
     var endCol = Math.min(map.cols - 1, startCol + (this.camera.width / map.tsize));
     var startRow = Math.floor(this.camera.y / map.tsize);
@@ -312,6 +321,7 @@ Game.drawWall = function () {
     var offsetX = -this.camera.x + startCol * map.tsize;
     var offsetY = -this.camera.y + startRow * map.tsize;
 
+    var objects = [];
     for (var c = startCol; c <= endCol; c++) {
         for (var r = startRow; r <= endRow; r++) {
 			var tile = map.getTile('calculate_wall', c, r);
@@ -320,7 +330,10 @@ Game.drawWall = function () {
             if (false !== tile && 'undefined' !== typeof(tile)) {
 				tileX = tile_map[tile][0];
 				tileY = tile_map[tile][1];
-                this.ctx.drawImage(
+                objects.push([
+                    (map.getTile('calculate_wall_base', c, r)) * 32,
+                    'drawImage',
+                    [
                     this.tileAtlas, // image
                     tileX * map.tsize, // source x
                     tileY * map.tsize, // source y
@@ -330,9 +343,11 @@ Game.drawWall = function () {
                     Math.round(y), // target y
                     map.tsize, // target width
                     map.tsize // target height
-                );
+                    ]
+                ]);
             }
         }
     }
+    return objects;
 };
 

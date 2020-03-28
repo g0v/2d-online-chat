@@ -255,14 +255,10 @@ Game.update = function (delta) {
 	
 };
 
-Game._drawHeroes = function(){
-	var hero_y = [];
+Game.getDrawingHeroes = function(){
+    var objects = [];
+
 	for (var id in this.heroes) {
-		hero_y.push([id, this.heroes[id].y]);
-	}
-	hero_y.sort(function(a,b) { return a[1] - b[1]; });
-	for (var id_y of hero_y) {
-		var id = id_y[0];
 		if ('undefined' === typeof(this.heroes[id].image)) {
 			continue;
 		}
@@ -271,126 +267,142 @@ Game._drawHeroes = function(){
 			this.heroes[id].screenY = this.heroes[id].y - Game.camera.y;
 		}
 		col = Math.floor(this.heroes[id].col / 50) % 3;
-		this.ctx.drawImage(
+        objects.push([
+            this.heroes[id].y,
+            'drawImage',
+            [
 			this.heroes[id].image,
 			col * 32, this.heroes[id].row * 32, 32, 32,
 			this.heroes[id].screenX - this.heroes[id].width / 2,
 			this.heroes[id].screenY - this.heroes[id].height / 2,
 			32, 32
-		);
+            ]
+		]);
 
 		// audioLevel
-		this.ctx.font = '14px';
-		var textSize = this.ctx.measureText(this.heroes[id].name);
-		var textHeight = textSize.actualBoundingBoxAscent + textSize.actualBoundingBoxDescent;
-		this.ctx.fillStyle = 'rgba(255,0,0,' + this.heroes[id].audioLevel + ')';
+		objects.push([
+            this.heroes[id].y,
+            (function(hero, ctx){
+                 ctx.font = '14px';
+                 var textSize = ctx.measureText(hero.name);
+                 var textHeight = textSize.actualBoundingBoxAscent + textSize.actualBoundingBoxDescent;
+                 ctx.fillStyle = 'rgba(255,0,0,' + hero.audioLevel + ')';
 		
-		this.ctx.fillRect(
-			this.heroes[id].screenX - textSize.width / 2,
-			this.heroes[id].screenY - 20 - textHeight,
-			textSize.width,
-			textHeight
-		);
+                 ctx.fillRect(
+                     hero.screenX - textSize.width / 2,
+                     hero.screenY - 20 - textHeight,
+                     textSize.width,
+                     textHeight
+                 );
 
- 		// name
-		this.ctx.textAlign = 'center';
-		this.ctx.fillStyle = 'black';
-		this.ctx.fillText(this.heroes[id].name, 
-			this.heroes[id].screenX,
-			this.heroes[id].screenY - 20
-		);
+                 // name
+                 ctx.textAlign = 'center';
+                 ctx.fillStyle = 'black';
+                 ctx.fillText(hero.name, 
+                     hero.screenX,
+                     hero.screenY - 20
+                 );
 		
-		// message
-		if (this.heroes[id].messages.length) {
-			var width = 0;
-			var height = 0;
-			metric = this.ctx.measureText(this.heroes[id].name + ':');
-			width = Math.max(width, metric.width);
-			height += metric.actualBoundingBoxAscent + metric.actualBoundingBoxDescent + 2;
+                 // message
+                 if (hero.messages.length) {
+                     var width = 0;
+                     var height = 0;
+                     metric = ctx.measureText(hero.name + ':');
+                     width = Math.max(width, metric.width);
+                     height += metric.actualBoundingBoxAscent + metric.actualBoundingBoxDescent + 2;
 
-			for (var message of this.heroes[id].messages) {
-				metric = this.ctx.measureText(message[0]);
-				width = Math.max(width, metric.width);
-				height += metric.actualBoundingBoxAscent + metric.actualBoundingBoxDescent + 2;
-			}
+                     for (var message of hero.messages) {
+                         metric = ctx.measureText(message[0]);
+                         width = Math.max(width, metric.width);
+                         height += metric.actualBoundingBoxAscent + metric.actualBoundingBoxDescent + 2;
+                     }
 
-			this.ctx.beginPath();
-			this.ctx.fillStyle = 'white';
-			this.ctx.strokeStyle = 'black';
-			this.ctx.lineWidth = 2;
+                     ctx.beginPath();
+                     ctx.fillStyle = 'white';
+                     ctx.strokeStyle = 'black';
+                     ctx.lineWidth = 2;
 
-			var bubbleLeft = this.heroes[id].screenX - width / 2 - 3;
-			var bubbleTop = this.heroes[id].screenY - 20 - height - 3;
-			var bubbleRight = this.heroes[id].screenX + width / 2 + 3;
-			var bubbleBottom = this.heroes[id].screenY - 20;
+                     var bubbleLeft = hero.screenX - width / 2 - 3;
+                     var bubbleTop = hero.screenY - 20 - height - 3;
+                     var bubbleRight = hero.screenX + width / 2 + 3;
+                     var bubbleBottom = hero.screenY - 20;
 
-			var radius = 2;
-			//left-top
-			this.ctx.moveTo(bubbleLeft + radius, bubbleTop);
-			//right-top
-			this.ctx.lineTo(bubbleRight - radius, bubbleTop);
-			this.ctx.quadraticCurveTo(bubbleRight, bubbleTop, bubbleRight, bubbleTop + radius);
-			//right-bottom
-			this.ctx.lineTo(bubbleRight, bubbleBottom - radius);
-			this.ctx.quadraticCurveTo(bubbleRight, bubbleBottom, bubbleRight - radius, bubbleBottom);
-			//angle
-			this.ctx.lineTo((bubbleLeft+bubbleRight)/2 + 4, bubbleBottom);
-			this.ctx.lineTo((bubbleLeft+bubbleRight)/2, bubbleBottom + 4);
-			this.ctx.lineTo((bubbleLeft+bubbleRight)/2 - 4, bubbleBottom);
+                     var radius = 2;
+                     //left-top
+                     ctx.moveTo(bubbleLeft + radius, bubbleTop);
+                     //right-top
+                     ctx.lineTo(bubbleRight - radius, bubbleTop);
+                     ctx.quadraticCurveTo(bubbleRight, bubbleTop, bubbleRight, bubbleTop + radius);
+                     //right-bottom
+                     ctx.lineTo(bubbleRight, bubbleBottom - radius);
+                     ctx.quadraticCurveTo(bubbleRight, bubbleBottom, bubbleRight - radius, bubbleBottom);
+                     //angle
+                     ctx.lineTo((bubbleLeft+bubbleRight)/2 + 4, bubbleBottom);
+                     ctx.lineTo((bubbleLeft+bubbleRight)/2, bubbleBottom + 4);
+                     ctx.lineTo((bubbleLeft+bubbleRight)/2 - 4, bubbleBottom);
 
-			//left-bottom
-			this.ctx.lineTo(bubbleLeft + radius, bubbleBottom);
-			this.ctx.quadraticCurveTo(bubbleLeft, bubbleBottom, bubbleLeft, bubbleBottom -radius);
-			// back to left-top
-			this.ctx.lineTo(bubbleLeft, bubbleTop + radius);
-			this.ctx.quadraticCurveTo(bubbleLeft, bubbleTop, bubbleLeft + radius, bubbleTop);
+                     //left-bottom
+                     ctx.lineTo(bubbleLeft + radius, bubbleBottom);
+                     ctx.quadraticCurveTo(bubbleLeft, bubbleBottom, bubbleLeft, bubbleBottom -radius);
+                     // back to left-top
+                     ctx.lineTo(bubbleLeft, bubbleTop + radius);
+                     ctx.quadraticCurveTo(bubbleLeft, bubbleTop, bubbleLeft + radius, bubbleTop);
 
-			this.ctx.fill();
-			this.ctx.stroke();
+                     ctx.fill();
+                     ctx.stroke();
 
-			this.ctx.textAlign = 'left';
-			this.ctx.fillStyle = 'black';
+                     ctx.textAlign = 'left';
+                     ctx.fillStyle = 'black';
 
-			metric = this.ctx.measureText(this.heroes[id].name + ':');
-			height -= (metric.actualBoundingBoxAscent + metric.actualBoundingBoxDescent + 2);
-			this.ctx.fillText(this.heroes[id].name + ':',
-				this.heroes[id].screenX - width / 2,
-				this.heroes[id].screenY - 20 - height - 4
-			);
-			for (var message of this.heroes[id].messages) {
-				metric = this.ctx.measureText(message[0]);
-				height -= (metric.actualBoundingBoxAscent + metric.actualBoundingBoxDescent + 2);
-				this.ctx.fillText(message[0],
-					this.heroes[id].screenX - width / 2,
-					this.heroes[id].screenY - 20 - height - 4
-				);
-			}
-		}
+                     metric = ctx.measureText(hero.name + ':');
+                     height -= (metric.actualBoundingBoxAscent + metric.actualBoundingBoxDescent + 2);
+                     ctx.fillText(hero.name + ':',
+                             hero.screenX - width / 2,
+                             hero.screenY - 20 - height - 4
+                             );
+                     for (var message of hero.messages) {
+                         metric = ctx.measureText(message[0]);
+                         height -= (metric.actualBoundingBoxAscent + metric.actualBoundingBoxDescent + 2);
+                         ctx.fillText(message[0],
+                                 hero.screenX - width / 2,
+                                 hero.screenY - 20 - height - 4
+                         );
+                     }
+                 }
 
-		// video
-		if (Game.heroes[id].video_dom) {
-			var videoSettings = Game.heroes[id].video_track.getTrack().getSettings();
-			var maxSide = Math.max(videoSettings.height, videoSettings.width);
-			var width = Math.floor(100 * videoSettings.width / maxSide);
-			var height = Math.floor(100 * videoSettings.height / maxSide);
-			this.ctx.drawImage(Game.heroes[id].video_dom,
-				this.heroes[id].screenX - width / 2,
-				this.heroes[id].screenY - height - 40,
-				width, height 
-			);
-		}
-	}
+                 // video
+                 if (hero.video_dom) {
+                     var videoSettings = hero.video_track.getTrack().getSettings();
+                     var maxSide = Math.max(videoSettings.height, videoSettings.width);
+                     var width = Math.floor(100 * videoSettings.width / maxSide);
+                     var height = Math.floor(100 * videoSettings.height / maxSide);
+                     ctx.drawImage(hero.video_dom,
+                             hero.screenX - width / 2,
+                             hero.screenY - height - 40,
+                             width, height 
+                     );
+                 }
+            }),[this.heroes[id], this.ctx]]);
+    }
+    return objects;
 };
 
 Game.render = function () {
     // draw map background layer
     this.drawGroundLayer();
-	this.drawObject();
 
-    // draw main character
+    var objects = [];
+    objects = objects.concat(this.getDrawingObjects());
+    objects = objects.concat(this.getDrawingHeroes());
+    objects = objects.concat(this.getDrawingWalls());
+    objects = objects.sort(function(a,b) { return a[0] - b[0]; });
 
-	this._drawHeroes();
-
-    // draw map top layer
-    this.drawWall();
+    var ctx = this.ctx;
+    objects.map(function(object) {
+        if ('function' === typeof(object[1])) {
+            object[1].apply(null, object[2]);
+        } else {
+            Game.ctx[object[1]].apply(Game.ctx, object[2]);
+        }
+    });
 };
