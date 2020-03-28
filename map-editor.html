@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
+<script src="common.js"></script>
+<script src="map-editor.js"></script>
+<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.6/css/bootstrap.css">
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+<style>
+#game {
+    width: 600px;
+    height: 600px;
+    position: relative;
+}
+
+#label-object .map-object.choosed {
+    border: 2px solid yellow;
+}
+</style>
+</head>
+<body>
+<div class="container-fluid">
+    <div class="row-fluid">
+        <div class="col-md-8">
+            <canvas id="game" width="512" height="512"></canvas>
+        </div>
+        <div class="col-md-4">
+            Layers:
+            <label><input type="radio" name="layer" value="result" checked="checked">Result</label>
+            <label><input type="radio" name="layer" value="ground">Ground</label>
+            <label><input type="radio" name="layer" value="wall">Wall</label>
+            <label><input type="radio" name="layer" value="object">Object</label>
+            <br>
+            Config:
+            <textarea id="result">{}</textarea>
+            <button id="button-loadsample">Load Sample</button>
+            <hr>
+            Object: <div id="label-object"></div>
+            <script>
+$('#button-loadsample').click(function(e){
+        e.preventDefault();
+        Game.loadSample();
+});
+$('[name="layer"]').change(function(){
+        $('#label-object').html('');
+        var layer = $(this).val();
+        if ('undefined' === typeof(tile_groups[layer])) {
+            return;
+        }
+        tile_groups[layer].map(function(line){
+            line.map(function(obj){
+                if ('undefined' === typeof(tile_map[obj])) {
+                    return;
+                }
+                var object_dom = $('<span></span>').css({
+                        width: 32,
+                        height: 32,
+                        display: 'inline-block',
+                        "background-position": (-32 * tile_map[obj][0]) + 'px ' + (-32 * tile_map[obj][1]) + 'px',
+                        'background-image': 'url(sprite/open_tileset.png)',
+                }).addClass('map-object').data('object', obj);
+
+                $('#label-object').append(object_dom);
+            });
+            $('#label-object').append('<br>');
+        });
+});
+$('#label-object').on('click', '.map-object', function(e){
+    e.preventDefault();
+    $('.map-object').removeClass('choosed');
+    $(this).addClass('choosed');
+});
+if (localStorage.getItem('config')) {
+    map.layers = JSON.parse(localStorage.getItem('config'));
+    updateLayerConfig();
+} else {
+    Game.loadSample();
+}
+            </script>
+        </div>
+    </div>
+</div>
+<script>
+</script>
+</body>
+</html>
+
