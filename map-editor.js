@@ -312,7 +312,13 @@ Game.render = function () {
         objects = objects.concat(this.getDrawingWalls());
         objects = objects.concat(this.getDrawingObjects());
     } else if ($('[name="layer"]:checked').val() == 'ground') {
+        objects = objects.concat(this.getDrawingWalls().map(function(o) { o[3] = 0.5; return o}));
+        objects = objects.concat(this.getDrawingObjects().map(function(o) { o[3] = 0.5; return o}));
+    } else if ($('[name="layer"]:checked').val() == 'wall') {
+        objects = objects.concat(this.getDrawingWalls().map(function(o) { o[3] = 0.5; return o}));
+        
     } else if ($('[name="layer"]:checked').val() == 'object') {
+        objects = objects.concat(this.getDrawingWalls().map(function(o) { o[3] = 0.5; return o}));
         objects = objects.concat(this.getDrawingObjects());
     }
 
@@ -320,11 +326,18 @@ Game.render = function () {
 
     var ctx = this.ctx;
     objects.map(function(object) {
+        Game.ctx.save();
+        if ('number' === typeof(object[3])) {
+            Game.ctx.globalAlpha = object[3];
+        } else {
+            Game.ctx.globalAlpha = 1;
+        }
         if ('function' === typeof(object[1])) {
             object[1].apply(null, object[2]);
         } else {
             Game.ctx[object[1]].apply(Game.ctx, object[2]);
         }
+        Game.ctx.restore();
     });
 
     if ($('[name="layer"]:checked').val() == 'wall') {
