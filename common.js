@@ -351,3 +351,135 @@ Game.getDrawingWalls = function () {
     return objects;
 };
 
+Game.getDrawingHeroes = function(){
+    var objects = [];
+
+	for (var id in this.heroes) {
+		if ('undefined' === typeof(this.heroes[id].image)) {
+			continue;
+		}
+		if (id != 'me') {
+			this.heroes[id].screenX = this.heroes[id].x - Game.camera.x;
+			this.heroes[id].screenY = this.heroes[id].y - Game.camera.y;
+		}
+		col = Math.floor(this.heroes[id].col / 50) % 3;
+        objects.push([
+            this.heroes[id].y,
+            'drawImage',
+            [
+			this.heroes[id].image,
+			col * 32, this.heroes[id].row * 32, 32, 32,
+			this.heroes[id].screenX - this.heroes[id].width / 2,
+			this.heroes[id].screenY - this.heroes[id].height / 2,
+			32, 32
+            ]
+		]);
+
+		// audioLevel
+		objects.push([
+            this.heroes[id].y,
+            (function(hero, ctx){
+                 ctx.font = '14px';
+                 var textSize = ctx.measureText(hero.name);
+                 var textHeight = textSize.actualBoundingBoxAscent + textSize.actualBoundingBoxDescent;
+                 ctx.fillStyle = 'rgba(255,0,0,' + hero.audioLevel + ')';
+		
+                 ctx.fillRect(
+                     hero.screenX - textSize.width / 2,
+                     hero.screenY - 20 - textHeight,
+                     textSize.width,
+                     textHeight
+                 );
+
+                 // name
+                 ctx.textAlign = 'center';
+                 ctx.fillStyle = 'black';
+                 ctx.fillText(hero.name, 
+                     hero.screenX,
+                     hero.screenY - 20
+                 );
+		
+                 // message
+                 if (hero.messages.length) {
+                     var width = 0;
+                     var height = 0;
+                     metric = ctx.measureText(hero.name + ':');
+                     width = Math.max(width, metric.width);
+                     height += metric.actualBoundingBoxAscent + metric.actualBoundingBoxDescent + 2;
+
+                     for (var message of hero.messages) {
+                         metric = ctx.measureText(message[0]);
+                         width = Math.max(width, metric.width);
+                         height += metric.actualBoundingBoxAscent + metric.actualBoundingBoxDescent + 2;
+                     }
+
+                     ctx.beginPath();
+                     ctx.fillStyle = 'white';
+                     ctx.strokeStyle = 'black';
+                     ctx.lineWidth = 2;
+
+                     var bubbleLeft = hero.screenX - width / 2 - 3;
+                     var bubbleTop = hero.screenY - 20 - height - 3;
+                     var bubbleRight = hero.screenX + width / 2 + 3;
+                     var bubbleBottom = hero.screenY - 20;
+
+                     var radius = 2;
+                     //left-top
+                     ctx.moveTo(bubbleLeft + radius, bubbleTop);
+                     //right-top
+                     ctx.lineTo(bubbleRight - radius, bubbleTop);
+                     ctx.quadraticCurveTo(bubbleRight, bubbleTop, bubbleRight, bubbleTop + radius);
+                     //right-bottom
+                     ctx.lineTo(bubbleRight, bubbleBottom - radius);
+                     ctx.quadraticCurveTo(bubbleRight, bubbleBottom, bubbleRight - radius, bubbleBottom);
+                     //angle
+                     ctx.lineTo((bubbleLeft+bubbleRight)/2 + 4, bubbleBottom);
+                     ctx.lineTo((bubbleLeft+bubbleRight)/2, bubbleBottom + 4);
+                     ctx.lineTo((bubbleLeft+bubbleRight)/2 - 4, bubbleBottom);
+
+                     //left-bottom
+                     ctx.lineTo(bubbleLeft + radius, bubbleBottom);
+                     ctx.quadraticCurveTo(bubbleLeft, bubbleBottom, bubbleLeft, bubbleBottom -radius);
+                     // back to left-top
+                     ctx.lineTo(bubbleLeft, bubbleTop + radius);
+                     ctx.quadraticCurveTo(bubbleLeft, bubbleTop, bubbleLeft + radius, bubbleTop);
+
+                     ctx.fill();
+                     ctx.stroke();
+
+                     ctx.textAlign = 'left';
+                     ctx.fillStyle = 'black';
+
+                     metric = ctx.measureText(hero.name + ':');
+                     height -= (metric.actualBoundingBoxAscent + metric.actualBoundingBoxDescent + 2);
+                     ctx.fillText(hero.name + ':',
+                             hero.screenX - width / 2,
+                             hero.screenY - 20 - height - 4
+                             );
+                     for (var message of hero.messages) {
+                         metric = ctx.measureText(message[0]);
+                         height -= (metric.actualBoundingBoxAscent + metric.actualBoundingBoxDescent + 2);
+                         ctx.fillText(message[0],
+                                 hero.screenX - width / 2,
+                                 hero.screenY - 20 - height - 4
+                         );
+                     }
+                 }
+
+                 // video
+                 if (hero.video_dom) {
+                     var videoSettings = hero.video_track.getTrack().getSettings();
+                     var maxSide = Math.max(videoSettings.height, videoSettings.width);
+                     var width = Math.floor(100 * videoSettings.width / maxSide);
+                     var height = Math.floor(100 * videoSettings.height / maxSide);
+                     ctx.drawImage(hero.video_dom,
+                             hero.screenX - width / 2,
+                             hero.screenY - height - 40,
+                             width, height 
+                     );
+                 }
+            }),[this.heroes[id], this.ctx]]);
+    }
+    return objects;
+};
+
