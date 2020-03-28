@@ -260,9 +260,9 @@ Game.render = function () {
     this.drawGroundLayer();
 
     var objects = [];
-    objects = objects.concat(this.getDrawingObjects());
     objects = objects.concat(this.getDrawingHeroes());
     objects = objects.concat(this.getDrawingWalls());
+    objects = objects.concat(this.getDrawingObjects());
     objects = objects.sort(function(a,b) { return a[0] - b[0]; });
 
     var ctx = this.ctx;
