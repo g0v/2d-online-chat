@@ -27,27 +27,10 @@ var map = {
 };
 
 Game.loadSample = function(){
-    map.layers = {ground: [], wall: [], object:[]};
-    for (var r = 0; r < map.rows; r ++) {
-        for (var c = 0; c < map.cols; c ++) {
-        if (!((c == 10 || c == 0 || c == map.cols - 1) && r == 0) && (c == 10 || r == 10 || c == 0 || r == 1 || c == map.cols - 1 || r == map.rows - 1)) {
-             map.layers['ground'][r * map.cols + c] = 'ground';
-             map.layers['wall'][r * map.cols + c] = true;
-         } else {
-             map.layers['ground'][r * map.cols + c] = 'ground';
-             map.layers['wall'][r * map.cols + c] = false;
-         }
-      }
-    }
-
-    map.layers['wall'][10 * map.cols + 7] = false;
-    map.layers['wall'][10 * map.cols + 6] = false;
-    map.layers['wall'][13 * map.cols + 10] = false;
-    map.layers['wall'][14 * map.cols + 10] = false;
-    map.layers['wall'][6 * map.cols + 10] = false;
-    map.layers['wall'][7 * map.cols + 10] = false;
-    map.layers['object'][8 * map.cols + 8] = 'chair';
-    updateLayerConfig();
+    $.get('room.json', function(ret) {
+        map.layers = ret;
+        updateLayerConfig();
+    }, 'json');
 };
 
 function updateLayerConfig(){
