@@ -26,6 +26,13 @@
             <canvas id="game" width="512" height="512"></canvas>
         </div>
         <div class="col-md-4">
+            Room Name: <input type="text" name="room_name" value="chat2d"><br>
+            <button type="button" id="button-loadcloud">Load from Cloud</button>
+            <button type="button" id="button-savecloud">Save to Cloud</button>
+            <button type="button" id="button-loadsample">Load Sample</button>
+            <br>
+            Cloud Version: <span id="cloud-version"></span>
+            <br>
             Layers:
             <label><input type="radio" name="layer" value="result" checked="checked">Result</label>
             <label><input type="radio" name="layer" value="ground">Ground</label>
@@ -34,7 +41,6 @@
             <br>
             Config:
             <textarea id="result">{}</textarea>
-            <button id="button-loadsample">Load Sample</button>
             <hr>
             Object: <div id="label-object"></div>
             <script>
@@ -42,6 +48,39 @@ $('#button-loadsample').click(function(e){
         e.preventDefault();
         Game.loadSample();
 });
+
+$('#button-loadcloud').click(function(e){
+    e.preventDefault();
+    var room_name = $('[name="room_name"]').val();
+    $.ajax({
+            url: api_url + 'rpg/getroom?room=' + encodeURIComponent(room_name),
+            success:  function(ret){
+                $('#cloud-version').text(new Date(1000 * ret.data.room_data.updated_at));
+                map.layers = ret.data.room_data.data;
+                updateLayerConfig();
+            },
+            error: function(XMLHttpRequest, textStatus, errorThrown){
+                $('#cloud-version').text('not found');
+            }
+    });
+});
+
+$('#button-savecloud').click(function(e){
+    e.preventDefault();
+    var room_name = $('[name="room_name"]').val();
+    $.ajax({
+            type: 'post',
+            url: api_url + 'rpg/updateroom?room=' + encodeURIComponent(room_name),
+            data: {data: $('#result').val()},
+            success:  function(ret){
+                $('#cloud-version').text(new Date(1000 * ret.updated_at));
+            },
+            error: function(XMLHttpRequest, textStatus, errorThrown){
+                $('#cloud-version').text('not found');
+            }
+    });
+});
+
 $('[name="layer"]').change(function(){
         $('#label-object').html('');
         var layer = $(this).val();
