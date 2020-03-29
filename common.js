@@ -270,6 +270,20 @@ var tile_map = {
 	'roof_rdl': [5,1],
 	'roof_urdl': [15,2],
 	'chair': [10, 13],
+    'tableA_1': [6,13],
+    'tableA_2': [7,13],
+    'tableA_3': [6,14],
+    'tableA_4': [7,14],
+    'bar_u': [2, 12],
+    'bar_l': [2,13],
+    'bar_r': [0,14],
+    'bar_ul': [12,12],
+    'bar_d': [13,12],
+    'bar_lr': [1,14],
+    'bar_ud': [3,13],
+    'food_a': [3,5],
+    'food_b': [3,6],
+    'food_c':[4,6],
 };
 
 var tile_groups = {
@@ -277,10 +291,10 @@ var tile_groups = {
         ['ground', 'ground1', 'ground2', 'ground3', 'ground4', 'ground5', 'ground6', 'ground7']
     ],
     object: [
-        ['chair', 'carpet1_1', 'carpet1_2', 'carpet1_3'],
-        ['screen_lt', 'screen_t', 'screen_rt', 'computer_table1'],
-        ['screen_l', 'screen_c', 'screen_r', 'computer_table2'],
-        ['screen_lb', 'screen_b', 'screen_rb'],
+        ['chair', 'carpet1_1', 'carpet1_2', 'carpet1_3', 'tableA_1', 'tableA_2', 'food_a', 'food_b', 'food_c'],
+        ['screen_lt', 'screen_t', 'screen_rt', 'computer_table1', 'tableA_3', 'tableA_4'],
+        ['screen_l', 'screen_c', 'screen_r', 'computer_table2', 'bar_l', 'bar_d', 'bar_lr'],
+        ['screen_lb', 'screen_b', 'screen_rb', 'bar_u', 'bar_r','bar_ul', 'bar_ud'],
     ]
 };
 
