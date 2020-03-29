@@ -321,6 +321,7 @@ Game.render = function () {
         objects = objects.concat(this.getDrawingObjects().map(function(o) { o[3] = 0.5; return o}));
     } else if ($('[name="layer"]:checked').val() == 'wall') {
         objects = objects.concat(this.getDrawingWalls().map(function(o) { o[3] = 0.5; return o}));
+        objects = objects.concat(this.getDrawingObjects().map(function(o) { o[3] = 0.5; return o}));
         
     } else if ($('[name="layer"]:checked').val() == 'object') {
         objects = objects.concat(this.getDrawingWalls().map(function(o) { o[3] = 0.5; return o}));
