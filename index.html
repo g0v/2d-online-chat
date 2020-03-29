@@ -546,6 +546,7 @@ const initOptions = {
 $('#room-form').submit(function(e){
 	e.preventDefault();
 	confOptions.confID = $('#room-form [name="room-name"]').val();
+    loadRoomData(confOptions.confID);
 	$('#room-form').hide();
     $('#joined-form').show();
 

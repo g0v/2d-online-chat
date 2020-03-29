@@ -26,10 +26,23 @@ var map = {
     }
 };
 
-$.get('room.json', function(room) {
-    map.layers = room;
-    calculateWallLayer();
-}, 'json');
+var loadRoomData = function(room_name){
+    $.ajax({
+        url: api_url + 'rpg/getroom?room=' + encodeURIComponent(room_name),
+        success:  function(ret){
+            map.version = ret.data.room_data.updated_at;
+            map.layers = ret.data.room_data.data;
+            calculateWallLayer();
+        },
+        error: function(XMLHttpRequest, textStatus, errorThrown) {
+            $.get('room.json', function(room) {
+                map.layers = room;
+                calculateWallLayer();
+            }, 'json');
+        }
+    });
+};
+loadRoomData('chat2d');
 
 function Camera(map, width, height) {
     this.x = 0;
