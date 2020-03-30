@@ -166,13 +166,6 @@ Game.getDrawingObjects = function () {
 };
 
 Game.getDrawingCustomObjects = function () {
-    var startCol = Math.floor(this.camera.x / map.tsize);
-    var endCol = Math.min(map.cols - 1, startCol + (this.camera.width / map.tsize));
-    var startRow = Math.floor(this.camera.y / map.tsize);
-    var endRow = Math.min(map.rows - 1, startRow + (this.camera.height / map.tsize));
-    var offsetX = -this.camera.x + startCol * map.tsize;
-    var offsetY = -this.camera.y + startRow * map.tsize;
-
     var objects = [];
     for (var id in Game.objects) {
         var object = Game.objects[id];
