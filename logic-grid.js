@@ -243,11 +243,25 @@ Game.init = function () {
         var x = Math.floor((Game.mouse[0] + Game.camera.x) / 32) * 32 + 16;
         var y = Math.floor((Game.mouse[1] + Game.camera.y) / 32) * 32 + 16;
         if (Game.mouse_click == 'add-object-point') {
-            Game.mouse_click = false;
+            var type = $('#add-object-step-1 [name="type"]').val();
             $('#add-object-step-2 [name="x"]').val(x);
             $('#add-object-step-2 [name="y"]').val(y);
             $('#add-object-pos').text(x + ' ' + y);
-            $('#button-pos').text('Click me and click the map');
+            if (type == 'npc') {
+                Game.mouse_click = false;
+                add_object_step3_enable('preview');
+                $('#button-pos').text('Click me and click the map');
+            } else {
+                Game.mouse_click = 'add-object-point-2';
+                $('#button-pos').text('Click the right-bottom').prop('disabled', true);
+            }
+        } else if (Game.mouse_click == 'add-object-point-2') {
+            Game.mouse_click = false;
+            $('#add-object-step-2 [name="x2"]').val(x);
+            $('#add-object-step-2 [name="y2"]').val(y);
+            var old_x_y = $('#add-object-pos').text();
+            $('#add-object-pos').text(old_x_y + ' to ' + x + ' ' + y);
+            $('#button-pos').text('Click me and click the map').prop('disabled', false);;
             add_object_step3_enable('preview');
         } else {
             Game.heroes.me.x = x;
@@ -309,6 +323,7 @@ Game.render = function () {
     objects = objects.concat(this.getDrawingHeroes());
     objects = objects.concat(this.getDrawingWalls());
     objects = objects.concat(this.getDrawingObjects());
+    objects = objects.concat(this.getDrawingCustomObjects());
     objects = objects.sort(function(a,b) { return a[0] - b[0]; });
 
     var ctx = this.ctx;

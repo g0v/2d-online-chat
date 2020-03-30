@@ -88,7 +88,7 @@ body {
                     Object Type: <select name="type">
                         <option value="0">Choose One</option>
                         <option value="npc">NPC</option>
-                        <!-- <option value="image">Image</option> -->
+                        <option value="image">Image</option>
                         <!-- <option value="hackmd">HackMD</option> -->
                         <!-- <option value="textbox">textbox</option> -->
                         <!-- <option value="screenshare">Screen Share</option> -->
@@ -98,6 +98,8 @@ body {
                     Potision: 
                     <input type="hidden" name="x">
                     <input type="hidden" name="y">
+                    <input type="hidden" name="x2">
+                    <input type="hidden" name="y2">
                     <span id="add-object-pos"></span>
                     <button id="button-pos">Click me and click the map</button><br>
                 </div>
@@ -118,6 +120,10 @@ body {
                         <option value="3">Always</option>
                     </select><br>
                     Say: <textarea name="say"></textarea>
+                    <button type="submit">Add Object</button>
+                </script>
+                <script id="tmpl-object-param-image" type="text/html">
+                    Image URL: <input type="text" name="image_url"><br>
                     <button type="submit">Add Object</button>
                 </script>
             </form>
@@ -678,6 +684,7 @@ $('#add-object').click(function(e){
     $('#add-object').hide();
     $('#add-object-step-1').show();
     $('#add-object-step-1 [name="type"]').val(0);
+    $('#object-list').hide();
     $('#add-object-step-2').hide();
     $('#add-object-step-3').hide();
     $('#form-add-object').show();
@@ -705,6 +712,10 @@ var add_object_step3_enable = function(id){
             y: parseInt($('#form-add-object [name="y"]').val()),
             data: {},
         };
+        if (type == 'image') {
+            Game.objects.preview.x2 = parseInt($('#form-add-object [name="x2"]').val());
+            Game.objects.preview.y2 = parseInt($('#form-add-object [name="y2"]').val());
+        }
         $('#add-object-step-3 :input').each(function(){
             Game.objects.preview.data[$(this).attr('name')] = $(this).val();
         });

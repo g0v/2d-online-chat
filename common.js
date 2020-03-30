@@ -15,7 +15,7 @@ Loader.loadImage = function (key, src) {
         }.bind(this);
 
         img.onerror = function () {
-            reject('Could not load image: ' + src);
+            reject('Could not load image: ' + src, key, src);
         };
     }.bind(this));
 
@@ -160,6 +160,54 @@ Game.getDrawingObjects = function () {
                     ]
                 ]);
             }
+        }
+    }
+    return objects;
+};
+
+Game.getDrawingCustomObjects = function () {
+    var startCol = Math.floor(this.camera.x / map.tsize);
+    var endCol = Math.min(map.cols - 1, startCol + (this.camera.width / map.tsize));
+    var startRow = Math.floor(this.camera.y / map.tsize);
+    var endRow = Math.min(map.rows - 1, startRow + (this.camera.height / map.tsize));
+    var offsetX = -this.camera.x + startCol * map.tsize;
+    var offsetY = -this.camera.y + startRow * map.tsize;
+
+    var objects = [];
+    for (var id in Game.objects) {
+        var object = Game.objects[id];
+        if (object.type == 'image') {
+            var image = Loader.getImage('url:' + object.data.image_url);
+            if (image === null) {
+                Loader.loadImage('url:' + object.data.image_url, object.data.image_url).then(function(){}, function(err, key, src){ Loader.images[key] = false; });
+                continue;
+            } else if (image === false) {
+                continue;
+            }
+            if (image.width == 0 || image.height == 0) {
+                continue;
+            }
+            var ratio = image.width / image.height
+            var canvas_width = object.x2 - object.x + 32;
+            var canvas_height = object.y2 - object.y + 32;
+            if (canvas_height * ratio > canvas_width) {
+                target_width = canvas_width;
+                target_height = ratio / target_width;
+            } else {
+                target_height = canvas_height;
+                target_width = target_height * ratio;
+            }
+
+            objects.push([
+                object.y2 + 16,
+                'drawImage',
+                [image, 0, 0, image.width, image.height,
+                (object.x + object.x2) / 2 - target_width / 2,
+                (object.y + object.y2) / 2 - target_height / 2,
+                target_width,
+                target_height,
+                ]
+            ]);
         }
     }
     return objects;
