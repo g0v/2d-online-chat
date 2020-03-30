@@ -120,12 +120,15 @@ body {
                         <option value="3">Always</option>
                     </select><br>
                     Say: <textarea name="say"></textarea>
+                    <br>
                     <button type="submit">Add Object</button>
                 </script>
                 <script id="tmpl-object-param-image" type="text/html">
                     Image URL: <input type="text" name="image_url"><br>
+                    <br>
                     <button type="submit">Add Object</button>
                 </script>
+                <button type="button" class="button-cancel">Cancel</button>
             </form>
         </div>
     </div>
@@ -651,7 +654,6 @@ $('#form-add-object').submit(function(e){
             data: {data: JSON.stringify(Game.objects.preview)},
             success: function(ret){
                 loadRoomData(confOptions.confID);
-                Game.objects.preview = null;
                 $('#add-object').show();
                 $('#object-list').show();
                 $('#form-add-object').hide();
@@ -694,6 +696,14 @@ $('#form-add-object [name="type"]').change(function(e){
     $('#add-object-step-3').hide();
     $('#add-object-step-2').show();
     Game.mouse_click = 'add-object-point';
+});
+
+$('#form-add-object').on('click', '.button-cancel', function(e){
+    e.preventDefault();
+    delete(Game.objects.preview);
+    $('#form-add-object').hide();
+    $('#add-object').show();
+    $('#object-list').show();
 });
 
 var add_object_step3_enable = function(id){
