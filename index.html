@@ -58,6 +58,7 @@ body {
             <li role="presentation" class="nav-tab active" id="nav-tab-info"><a href="#">Info</a></li>
             <li role="presentation" class="nav-tab" id="nav-tab-chat"><a href="#">Chat</a></li>
             <li role="presentation" class="nav-tab" id="nav-tab-member"><a href="#">Members(<span id="member-count">0</span>)</a></li>
+            <li role="presentation" class="nav-tab" id="nav-tab-object"><a href="#">Objects(<span id="object-count">0</span>)</a></li>
         </ul>
 
         <div class="panel-tab" id="panel-tab-info">
@@ -77,6 +78,49 @@ body {
         </div>
         <div class="panel-tab" id="panel-tab-member" style="display: none">
             <ul id="member-list"></ul>
+        </div>
+        <div class="panel-tab" id="panel-tab-object" style="display: none">
+            <button id="add-object">Add Object</button>
+            <ol id="object-list">
+            </ol>
+            <form method="post" id="form-add-object" style="display: none">
+                <div id="add-object-step-1">
+                    Object Type: <select name="type">
+                        <option value="0">Choose One</option>
+                        <option value="npc">NPC</option>
+                        <!-- <option value="image">Image</option> -->
+                        <!-- <option value="hackmd">HackMD</option> -->
+                        <!-- <option value="textbox">textbox</option> -->
+                        <!-- <option value="screenshare">Screen Share</option> -->
+                    </select>
+                </div>
+                <div id="add-object-step-2" style="display:none">
+                    Potision: 
+                    <input type="hidden" name="x">
+                    <input type="hidden" name="y">
+                    <span id="add-object-pos"></span>
+                    <button id="button-pos">Click me and click the map</button><br>
+                </div>
+                <div id="add-object-step-3" style="display:none">
+                </div>
+                <script id="tmpl-object-param-npc" type="text/html">
+                    Name: <input type="text" name="name"><br>
+                    Character: <select name="character"></select><br>
+                    Way: <select name="row">
+                        <option value="3">Up</option>
+                        <option value="0">Down</option>
+                        <option value="1">Left</option>
+                        <option value="2">Right</option>
+                    </select><br>
+                    Say Type: <select name="say_type">
+                        <option value="1">Nothing</option>
+                        <!--<option value="2">Nearby</option>-->
+                        <option value="3">Always</option>
+                    </select><br>
+                    Say: <textarea name="say"></textarea>
+                    <button type="submit">Add Object</button>
+                </script>
+            </form>
         </div>
     </div>
     <script>
@@ -541,6 +585,137 @@ const initOptions = {
 
     // Whether desktop sharing should be disabled on Firefox.
     desktopSharingFirefoxDisabled: true
+};
+
+$('#button-pos').click(function(e){
+    e.preventDefault();
+    $(this).text('Click the map');
+    Game.mouse_click = 'add-object-point';
+});
+
+$('#object-list').on('click', '.button-edit-object', function(e){
+    e.preventDefault();
+    $('#add-object').hide();
+    $('#object-list').hide();
+    $('#form-add-object').show();
+
+    var id = $(this).parents('#object-list li').data('id');
+
+    $('#add-object-step-1 [name="type"]').val(Game.objects[id].type);
+    $('#add-object-step-2').show();
+    x = Game.objects[id].x;
+    y = Game.objects[id].y;
+    $('#add-object-step-2 [name="x"]').val(x);
+    $('#add-object-step-2 [name="y"]').val(y);
+    $('#add-object-pos').text(x + ' ' + y);
+    $('#button-pos').text('Click me and click the map');
+    add_object_step3_enable(id);
+});
+
+$('#object-list').on('click', '.button-delete-object', function(e){
+    e.preventDefault();
+    var id = $(this).parents('#object-list li').data('id');
+    $.ajax({
+        type: 'post',
+        url: api_url + 'rpg/deleteobject?room=' + encodeURIComponent(confOptions.confID) + '&room_object_id=' + encodeURIComponent(id),
+        success: function(ret){
+            console.log(ret);
+            loadRoomData(confOptions.confID);
+        },
+        error: function(XMLHttpRequest, textStatus, errorThrown){
+        },
+    });
+});
+$('#add-object-step-3').on('change', ':input', function(){
+    var target = $('#form-add-object').data('target');
+    Game.objects[target].data[$(this).attr('name')] = $(this).val();
+});
+
+$('#form-add-object').submit(function(e){
+    e.preventDefault();
+    if (!room) {
+        alert('Need login');
+        return;
+    }
+    var target = $('#form-add-object').data('target');
+    if (target == 'preview') {
+        $.ajax({
+            type: 'post',
+            url: api_url + 'rpg/addobject?room=' + encodeURIComponent(confOptions.confID),
+            data: {data: JSON.stringify(Game.objects.preview)},
+            success: function(ret){
+                loadRoomData(confOptions.confID);
+                Game.objects.preview = null;
+                $('#add-object').show();
+                $('#object-list').show();
+                $('#form-add-object').hide();
+            },
+            error: function(XMLHttpRequest, textStatus, errorThrown){
+                alert('add object failed');
+            },
+        });
+    } else {
+        $.ajax({
+            type: 'post',
+            url: api_url + 'rpg/updateobject?room=' + encodeURIComponent(confOptions.confID) + '&room_object_id=' + encodeURIComponent(target),
+            data: {data: JSON.stringify(Game.objects[target])},
+            success: function(ret){
+                loadRoomData(confOptions.confID);
+                Game.objects.preview = null;
+                $('#add-object').show();
+                $('#object-list').show();
+                $('#form-add-object').hide();
+            },
+            error: function(XMLHttpRequest, textStatus, errorThrown){
+                alert('add object failed');
+            },
+        });
+    }
+});
+
+$('#add-object').click(function(e){
+    e.preventDefault();
+    $('#add-object').hide();
+    $('#add-object-step-1').show();
+    $('#add-object-step-1 [name="type"]').val(0);
+    $('#add-object-step-2').hide();
+    $('#add-object-step-3').hide();
+    $('#form-add-object').show();
+});
+
+$('#form-add-object [name="type"]').change(function(e){
+    $('#add-object-step-3').hide();
+    $('#add-object-step-2').show();
+    Game.mouse_click = 'add-object-point';
+});
+
+var add_object_step3_enable = function(id){
+    var type = $('#form-add-object [name="type"]').val();
+    $('#add-object-step-3').html($('#tmpl-object-param-' + type).html());
+    if (type == 'npc') {
+        characters.map(function(c) {
+            $('#add-object-step-3 [name="character"]').append($('<option></option>').text(c));
+        });
+    }
+    $('#add-object-step-3').show();
+    if (id == 'preview') {
+        Game.objects.preview = {
+            type: type,
+            x: parseInt($('#form-add-object [name="x"]').val()),
+            y: parseInt($('#form-add-object [name="y"]').val()),
+            data: {},
+        };
+        $('#add-object-step-3 :input').each(function(){
+            Game.objects.preview.data[$(this).attr('name')] = $(this).val();
+        });
+        $('#add-object-step-3 [type="submit"]').text('Add Object');
+    } else {
+        for (var k in Game.objects[id].data) {
+            $('#add-object-step-3 [name="' + k + '"]:input').val(Game.objects[id].data[k]);
+        }
+        $('#add-object-step-3 [type="submit"]').text('Edit Object');
+    }
+    $('#form-add-object').data('target', id);
 };
 
 $('#room-form').submit(function(e){

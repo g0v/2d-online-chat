@@ -32,6 +32,19 @@ var loadRoomData = function(room_name){
         success:  function(ret){
             map.version = ret.data.room_data.updated_at;
             map.layers = ret.data.room_data.data;
+            Game.objects = {};
+            $('#object-list').html('');
+            ret.data.objects.map(function(o) {
+                var li_dom = $('<li></li>').text(o.object_id).attr('title', JSON.stringify(o.data)).data('id', o.object_id);
+                li_dom.append($('<button type="button">EDIT</button>').addClass('button-edit-object'));
+                li_dom.append($('<button type="button">DELETE</button>').addClass('button-delete-object'));
+                $('#object-list').append(li_dom);
+                if (null !== o.data) {
+                    Game.objects[o.object_id] = o.data;
+                }
+            });
+
+            $('#object-count').text(ret.data.objects.length).data(ret.data.objects);
             calculateWallLayer();
         },
         error: function(XMLHttpRequest, textStatus, errorThrown) {
@@ -210,6 +223,7 @@ Game.load = function () {
     ];
 };
 
+Game.objects = {};
 Game.init = function () {
     Keyboard.listenForEvents(
         [Keyboard.LEFT, Keyboard.RIGHT, Keyboard.UP, Keyboard.DOWN]);
@@ -228,10 +242,19 @@ Game.init = function () {
     document.getElementById('game').onmouseup = function(){
         var x = Math.floor((Game.mouse[0] + Game.camera.x) / 32) * 32 + 16;
         var y = Math.floor((Game.mouse[1] + Game.camera.y) / 32) * 32 + 16;
-        Game.heroes.me.x = x;
-        Game.heroes.me.y = y;
-        if (room) {
-            room.broadcastEndpointMessage({type:"teleport",message:[x,y]});
+        if (Game.mouse_click == 'add-object-point') {
+            Game.mouse_click = false;
+            $('#add-object-step-2 [name="x"]').val(x);
+            $('#add-object-step-2 [name="y"]').val(y);
+            $('#add-object-pos').text(x + ' ' + y);
+            $('#button-pos').text('Click me and click the map');
+            add_object_step3_enable('preview');
+        } else {
+            Game.heroes.me.x = x;
+            Game.heroes.me.y = y;
+            if (room) {
+                room.broadcastEndpointMessage({type:"teleport",message:[x,y]});
+            }
         }
     };
 };

@@ -1,4 +1,5 @@
 // From: https://mozdevs.github.io/gamedev-js-tiles/common.js
+var api_url = 'https://intro.g0v.ronny.tw/api/';
 
 var Loader = {
     images: {}
@@ -373,31 +374,59 @@ Game.getDrawingWalls = function () {
 
 Game.getDrawingHeroes = function(){
     var objects = [];
+    var heroes = [];
+    for (var id in this.heroes) {
+        var hero = this.heroes[id];
+        heroes.push(hero);
+    }
+    for (var id in Game.objects) {
+        var object = Game.objects[id];
+        if (object.type != 'npc') continue;
+        var hero = {width:32, height:32};
+        hero.x = object.x;
+        hero.y = object.y;
+        hero.col = 0;
+        hero.row = parseInt(object.data.row);
+        hero.audioLevel = 0;
+        hero.name = object.data.name;
+        hero.messages = [];
+        if (object.data.say_type == 3) {
+            hero.messages = object.data.say.split("\n").map(function(e){ return [e]; });
+        }
+        character = object.data.character;
+		if ('undefined' === typeof(hero.image)) {
+            var image = Loader.getImage('hero:' + character);
+            if (!image) {
+                Loader.loadImage('hero:' + character, 'sprite/' + character + '.png').then();
+            } else {
+                hero.image = image;
+            }
+		}
+        heroes.push(hero);
+    }
 
-	for (var id in this.heroes) {
-		if ('undefined' === typeof(this.heroes[id].image)) {
+	for (var hero of heroes) {
+		if ('undefined' === typeof(hero.image)) {
 			continue;
 		}
-		if (id != 'me') {
-			this.heroes[id].screenX = this.heroes[id].x - Game.camera.x;
-			this.heroes[id].screenY = this.heroes[id].y - Game.camera.y;
-		}
-		col = Math.floor(this.heroes[id].col / 50) % 3;
+        hero.screenX = hero.x - Game.camera.x;
+		hero.screenY = hero.y - Game.camera.y;
+		col = Math.floor(hero.col / 50) % 3;
         objects.push([
-            this.heroes[id].y,
+            hero.y,
             'drawImage',
             [
-			this.heroes[id].image,
-			col * 32, this.heroes[id].row * 32, 32, 32,
-			this.heroes[id].screenX - this.heroes[id].width / 2,
-			this.heroes[id].screenY - this.heroes[id].height / 2,
+			hero.image,
+			col * 32, hero.row * 32, 32, 32,
+			hero.screenX - hero.width / 2,
+			hero.screenY - hero.height / 2,
 			32, 32
             ]
 		]);
 
 		// audioLevel
 		objects.push([
-            this.heroes[id].y,
+            hero.y,
             (function(hero, ctx){
                  ctx.font = '14px';
                  var textSize = ctx.measureText(hero.name);
@@ -498,7 +527,7 @@ Game.getDrawingHeroes = function(){
                              width, height 
                      );
                  }
-            }),[this.heroes[id], this.ctx]]);
+            }),[hero, this.ctx]]);
     }
     return objects;
 };
