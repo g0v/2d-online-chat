@@ -202,8 +202,8 @@ Game.getDrawingCustomObjects = function () {
                 object.y2 + 16,
                 'drawImage',
                 [image, 0, 0, image.width, image.height,
-                (object.x + object.x2) / 2 - target_width / 2,
-                (object.y + object.y2) / 2 - target_height / 2,
+                (object.x + object.x2) / 2 - target_width / 2 - this.camera.x,
+                (object.y + object.y2) / 2 - target_height / 2 - this.camera.y,
                 target_width,
                 target_height,
                 ]
