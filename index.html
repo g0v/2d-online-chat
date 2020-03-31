@@ -560,11 +560,11 @@ function disconnect() {
 
 const options = {
     hosts: {
-        domain: 'meet.jit.si',
-        muc: 'conference.meet.jit.si',
-        focus: "focus.meet.jit.si",
+        domain: 'meet.pdis.tw',
+        muc: 'conference.meet.pdis.tw',
+        focus: "focus.meet.pdis.tw",
     },
-    bosh: '//meet.jit.si/http-bind',
+    bosh: '//meet.pdis.tw/http-bind',
 
    // The name of client node advertised in XEP-0115 'c' stanza
    clientNode: 'http://jitsi.org/jitsimeet'
@@ -594,7 +594,7 @@ const initOptions = {
     desktopSharingChromeMinExtVersion: '0.1',
 
     // Whether desktop sharing should be disabled on Firefox.
-    desktopSharingFirefoxDisabled: true
+    desktopSharingFirefoxDisabled: true,
 };
 
 $('#button-pos').click(function(e){
@@ -748,8 +748,8 @@ $('#room-form').submit(function(e){
     $('#joined-form').show();
 
 	JitsiMeetJS.init(initOptions);
-    options.bosh = '//meet.jit.si/http-bind?room=' + encodeURIComponent(room_id);
-    confOptions.confID = 'meet.jit.si/' + room_id;
+    options.bosh = '//meet.pdis.tw/http-bind?room=' + encodeURIComponent(room_id);
+    confOptions.confID = 'meet.pdis.tw/' + room_id;
 	connection = new JitsiMeetJS.JitsiConnection(null, null, options);
 
 	connection.addEventListener(
