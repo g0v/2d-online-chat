@@ -747,6 +747,7 @@ $('#room-form').submit(function(e){
     $('#joined-form').show();
 
 	JitsiMeetJS.init(initOptions);
+    options.bosh = '//meet.jit.si/http-bind?room=' + encodeURIComponent(confOptions.confID);
 	connection = new JitsiMeetJS.JitsiConnection(null, null, options);
 
 	connection.addEventListener(
