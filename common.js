@@ -80,7 +80,6 @@ var Game = {};
 
 Game.run = function (context) {
     this.ctx = context;
-    this.ctx.font = '14px sans-serif';
     this._previousElapsed = 0;
 
     var p = this.load();
@@ -469,7 +468,6 @@ Game.getDrawingHeroes = function(){
 		objects.push([
             hero.y,
             (function(hero, ctx){
-                 ctx.font = '14px';
                  var textSize = ctx.measureText(hero.name);
                  var textHeight = textSize.actualBoundingBoxAscent + textSize.actualBoundingBoxDescent;
                  ctx.fillStyle = 'rgba(255,0,0,' + hero.audioLevel + ')';
@@ -482,8 +480,16 @@ Game.getDrawingHeroes = function(){
                  );
 
                  // name
+                 ctx.font = 'normal 12px Arial';
                  ctx.textAlign = 'center';
-                 ctx.fillStyle = 'black';
+                 ctx.strokeStyle = "black";
+                 ctx.lineWidth = 3;
+                 ctx.strokeText(hero.name, 
+                     hero.screenX,
+                     hero.screenY - 20
+                 );
+                 ctx.textAlign = 'center';
+                 ctx.fillStyle = "white";
                  ctx.fillText(hero.name, 
                      hero.screenX,
                      hero.screenY - 20
