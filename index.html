@@ -526,7 +526,7 @@ function onConferenceJoined() {
 }
 
 function onConnectionSuccess() {
-    room = connection.initJitsiConference(confOptions.confID, confOptions);
+    room = connection.initJitsiConference(room_id, confOptions);
     room.setDisplayName($('#name').val());
 	room.setLocalParticipantProperty('character', $('#character').val());
 	room.setLocalParticipantProperty('top', parseInt(Game.heroes.me.y));
@@ -574,6 +574,7 @@ var confOptions = {
     openBridgeChannel: true,
     confID: 'chat2d',
 };
+var room_id = 'chat2d';;
 
 JitsiMeetJS.setLogLevel(JitsiMeetJS.logLevels.ERROR);
 const initOptions = {
@@ -626,10 +627,10 @@ $('#object-list').on('click', '.button-delete-object', function(e){
     var id = $(this).parents('#object-list li').data('id');
     $.ajax({
         type: 'post',
-        url: api_url + 'rpg/deleteobject?room=' + encodeURIComponent(confOptions.confID) + '&room_object_id=' + encodeURIComponent(id),
+        url: api_url + 'rpg/deleteobject?room=' + encodeURIComponent(room_id) + '&room_object_id=' + encodeURIComponent(id),
         success: function(ret){
             console.log(ret);
-            loadRoomData(confOptions.confID);
+            loadRoomData(room_id)
         },
         error: function(XMLHttpRequest, textStatus, errorThrown){
         },
@@ -650,10 +651,10 @@ $('#form-add-object').submit(function(e){
     if (target == 'preview') {
         $.ajax({
             type: 'post',
-            url: api_url + 'rpg/addobject?room=' + encodeURIComponent(confOptions.confID),
+            url: api_url + 'rpg/addobject?room=' + encodeURIComponent(room_id),
             data: {data: JSON.stringify(Game.objects.preview)},
             success: function(ret){
-                loadRoomData(confOptions.confID);
+                loadRoomData(room_id);
                 $('#add-object').show();
                 $('#object-list').show();
                 $('#form-add-object').hide();
@@ -665,10 +666,10 @@ $('#form-add-object').submit(function(e){
     } else {
         $.ajax({
             type: 'post',
-            url: api_url + 'rpg/updateobject?room=' + encodeURIComponent(confOptions.confID) + '&room_object_id=' + encodeURIComponent(target),
+            url: api_url + 'rpg/updateobject?room=' + encodeURIComponent(room_id) + '&room_object_id=' + encodeURIComponent(target),
             data: {data: JSON.stringify(Game.objects[target])},
             success: function(ret){
-                loadRoomData(confOptions.confID);
+                loadRoomData(room_id);
                 Game.objects.preview = null;
                 $('#add-object').show();
                 $('#object-list').show();
@@ -741,13 +742,14 @@ var add_object_step3_enable = function(id){
 
 $('#room-form').submit(function(e){
 	e.preventDefault();
-	confOptions.confID = $('#room-form [name="room-name"]').val();
-    loadRoomData(confOptions.confID);
+    room_id = $('#room-form [name="room-name"]').val();
+    loadRoomData(room_id);
 	$('#room-form').hide();
     $('#joined-form').show();
 
 	JitsiMeetJS.init(initOptions);
-    options.bosh = '//meet.jit.si/http-bind?room=' + encodeURIComponent(confOptions.confID);
+    options.bosh = '//meet.jit.si/http-bind?room=' + encodeURIComponent(room_id);
+    confOptions.confID = 'meet.jit.si/' + room_id;
 	connection = new JitsiMeetJS.JitsiConnection(null, null, options);
 
 	connection.addEventListener(
