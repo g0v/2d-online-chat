@@ -184,7 +184,7 @@ Game.getDrawingCustomObjects = function () {
             var canvas_height = object.y2 - object.y + 32;
             if (canvas_height * ratio > canvas_width) {
                 target_width = canvas_width;
-                target_height = ratio / target_width;
+                target_height = target_width / ratio;
             } else {
                 target_height = canvas_height;
                 target_width = target_height * ratio;
