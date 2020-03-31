@@ -35,7 +35,14 @@ var loadRoomData = function(room_name){
             Game.objects = {};
             $('#object-list').html('');
             ret.data.objects.map(function(o) {
-                var li_dom = $('<li></li>').text(o.object_id).attr('title', JSON.stringify(o.data)).data('id', o.object_id);
+                var text = `${o.object_id}.[${o.data.type}]`;
+                if (o.data.type == 'npc') {
+                    text += o.data.data.name;
+                } else if (o.data.type == 'image') {
+                    text += o.data.data.image_url.substr(0, 10) + '...';
+                }
+
+                var li_dom = $('<li></li>').text(text).attr('title', JSON.stringify(o.data)).data('id', o.object_id);
                 li_dom.append($('<button type="button">EDIT</button>').addClass('button-edit-object'));
                 li_dom.append($('<button type="button">DELETE</button>').addClass('button-delete-object'));
                 $('#object-list').append(li_dom);
