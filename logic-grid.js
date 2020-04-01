@@ -4,6 +4,9 @@ var map = {
     tsize: 32,
     layers: {ground: [], wall: [], object:[]},
     getTile: function (layer, col, row) {
+        if (!this.layers[layer]) {
+return null;
+        }
         return this.layers[layer][row * map.cols + col];
     },
     isSolidTileAtXY: function (x, y) {
@@ -35,6 +38,12 @@ var loadRoomData = function(room_name){
             Game.objects = {};
             $('#object-list').html('');
             ret.data.objects.map(function(o) {
+                if ('undefined' === typeof(o.data)) {
+                    return;
+                }
+                if (null === o.data) {
+                    return;
+                }
                 var text = `${o.object_id}.[${o.data.type}]`;
                 if (o.data.type == 'npc') {
                     text += o.data.data.name;
