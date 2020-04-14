@@ -3,7 +3,7 @@
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 <script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
-<script src="//meet.jit.si/libs/lib-jitsi-meet.min.js"></script>
+<script src="//jitsi.jothon.online/libs/lib-jitsi-meet.min.js"></script>
 <script src="common.js"></script>
 <script src="logic-grid.js"></script>
 <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.6/css/bootstrap.css">
@@ -526,6 +526,7 @@ function onConferenceJoined() {
 }
 
 function onConnectionSuccess() {
+    confOptions.confID = 'jitsi.jothon.online/' + room_id;
     room = connection.initJitsiConference(room_id, confOptions);
     room.setDisplayName($('#name').val());
 	room.setLocalParticipantProperty('character', $('#character').val());
@@ -560,11 +561,11 @@ function disconnect() {
 
 const options = {
     hosts: {
-        domain: 'meet.pdis.tw',
-        muc: 'conference.meet.pdis.tw',
-        focus: "focus.meet.pdis.tw",
+        domain: 'jitsi.jothon.online',
+        muc: 'conference.jitsi.jothon.online',
+        focus: "focus.jitsi.jothon.online",
     },
-    bosh: '//meet.pdis.tw/http-bind',
+    bosh: '//jitsi.jothon.online/http-bind',
 
    // The name of client node advertised in XEP-0115 'c' stanza
    clientNode: 'http://jitsi.org/jitsimeet'
@@ -748,8 +749,8 @@ $('#room-form').submit(function(e){
     $('#joined-form').show();
 
 	JitsiMeetJS.init(initOptions);
-    options.bosh = '//meet.pdis.tw/http-bind?room=' + encodeURIComponent(room_id);
-    confOptions.confID = 'meet.pdis.tw/' + room_id;
+    options.bosh = '//jitsi.jothon.online/http-bind?room=' + encodeURIComponent(room_id);
+    confOptions.confID = 'jitsi.jothon.online/' + room_id;
 	connection = new JitsiMeetJS.JitsiConnection(null, null, options);
 
 	connection.addEventListener(
