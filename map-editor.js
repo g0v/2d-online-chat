@@ -4,6 +4,12 @@ var map = {
     tsize: 32,
     layers: {ground: [], wall: [], object:[]},
     getTile: function (layer, col, row) {
+        if ('undefined' === typeof(this.layers[layer])) {
+            return null;
+        }
+        if ('undefined' === typeof(this.layers[layer][row * map.cols + col])) {
+            return null;
+        }
         return this.layers[layer][row * map.cols + col];
     },
     isSolidTileAtXY: function (x, y) {
@@ -39,7 +45,16 @@ function updateLayerConfig(){
             delete(map.layers[id]);
         }
     }
+    if (map.layers._cols) {
+        map.cols = map.layers._cols;
+    }
+    if (map.layers._rows) {
+        map.rows = map.layers._rows;
+    }
+    $('[name="rows"]').val(map.rows);
+    $('[name="cols"]').val(map.cols);
     $('#result').val(JSON.stringify(map.layers));
+
     localStorage.setItem('config', JSON.stringify(map.layers));
     calculateWallLayer();
 };

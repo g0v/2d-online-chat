@@ -27,6 +27,8 @@
         </div>
         <div class="col-md-4">
             Room Name: <input type="text" name="room_name" value="chat2d"><br>
+            Width: <input type="text" name="rows" class="size-column"><br>
+            Height: <input type="text" name="cols" class="size-column"><br>
             <button type="button" id="button-loadcloud">Load from Cloud</button>
             <button type="button" id="button-savecloud">Save to Cloud</button>
             <button type="button" id="button-loadsample">Load Sample</button>
@@ -112,10 +114,45 @@ $('#label-object').on('click', '.map-object', function(e){
 });
 if (localStorage.getItem('config')) {
     map.layers = JSON.parse(localStorage.getItem('config'));
+    
     updateLayerConfig();
 } else {
     Game.loadSample();
 }
+
+$('.size-column').change(function(){
+        var old_cols = map.cols;
+        var old_rows = map.rows;
+        if ($(this).attr('name') == 'cols') {
+            new_cols = $(this).val();
+            new_rows = old_rows;
+        } else {
+            new_rows = $(this).val();
+            new_cols = old_cols;
+        }
+        if (new_cols < old_cols || new_rows < old_rows) {
+            if (!confirm('地圖變小可能會造成右下資料消失，您確定要變小嗎？')) {
+                $(this).val(map.layers['_' + $(this).attr('name')]);
+                return;
+            }
+        }
+        map.layers['_' + $(this).attr('name')] = $(this).val();
+        map.cols = map.layers._cols = new_cols;
+        map.rows = map.layers._rows = new_rows;
+        for (var l of ['ground', 'wall', 'object']) {
+            old_layer = map.layers[l];
+            map.layers[l] = [];
+            for (var c = map.cols - 1; c >= 0; c --) {
+                for (var r = 0; r < map.rows; r ++) {
+                    map.layers[l][r * map.cols + c] = old_layer[r * old_cols + c];
+                }
+            }
+        }
+        Game.camera.maxX = map.cols * map.tsize - Game.camera.width;
+        Game.camera.maxY = map.rows * map.tsize - Game.camera.height;
+
+        updateLayerConfig();
+});
             </script>
         </div>
     </div>
