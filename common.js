@@ -388,7 +388,7 @@ Game.getDrawingWalls = function () {
 			var tile = map.getTile('calculate_wall', c, r);
             var x = (c - startCol) * map.tsize + offsetX;
             var y = (r - startRow) * map.tsize + offsetY;
-            if (false !== tile && 'undefined' !== typeof(tile)) {
+            if (false !== tile && 'undefined' !== typeof(tile) && 'undefined' !== typeof(tile_map[tile])) {
 				tileX = tile_map[tile][0];
 				tileY = tile_map[tile][1];
                 objects.push([
