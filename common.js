@@ -1,5 +1,5 @@
 // From: https://mozdevs.github.io/gamedev-js-tiles/common.js
-var api_url = 'https://intro.g0v.ronny.tw/api/';
+var api_url = 'https://meet.jothon.online/api/';
 
 var Loader = {
     images: {}
