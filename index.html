@@ -518,7 +518,7 @@ function onConferenceJoined() {
     });
     room.on(JitsiMeetJS.events.conference.DISPLAY_NAME_CHANGED, (id, name) => {
         addLog(Game.heroes[id].name + ' changed name to ' + name);
-		Game.heroes[id].name = user;
+		Game.heroes[id].name = name;
         update_member_list();
     });
 
