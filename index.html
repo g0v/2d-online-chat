@@ -66,7 +66,7 @@ body {
                 Name: <input type="text" id="name" value="nobody"><br>
                 Character: <select id="character"></select>
                 <form id="room-form">
-                    Room: <input type="text" name="room-name" value="chat2d">
+                    Room: <input type="text" name="room-name" value="">
                     <button type="submit">Join</button>
                 </form>
             </div>
@@ -153,8 +153,12 @@ if (localStorage.getItem('name')) {
 
 if (location.search.match(/room=([^&]*)/)) {
     var matches = location.search.match(/room=([^&]*)/);
-    $('input[name="room-name"]').val(matches[1]);
+    room_id = matches[1];
+} else {
+    room_id = 'chat2d';
 }
+$('input[name="room-name"]').val(room_id);
+loadRoomData(room_id);
 var characters = [
     'school uniform 1/su1 Student fmale 01',
     'school uniform 1/su1 Student fmale 02',
@@ -573,9 +577,9 @@ const options = {
 
 var confOptions = {
     openBridgeChannel: true,
-    confID: 'chat2d',
+    confID: '',
 };
-var room_id = 'chat2d';;
+var room_id = '';
 
 JitsiMeetJS.setLogLevel(JitsiMeetJS.logLevels.ERROR);
 const initOptions = {
