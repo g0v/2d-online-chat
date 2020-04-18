@@ -140,7 +140,7 @@ body {
 				<textarea readonly="readonly" id="log" style="width: 100%; flex-grow: 2"></textarea>
 			</div>
 			<div id="arrow-controller" style="display: none; position: fixed; bottom: 10px; left: 10px; ">
-				<img src="100px-Arrow_keys.svg.png">
+				<img src="100px-Arrow_keys.svg.png" width="200%" height="200%">
 			</div>
         </div>
         <div class="panel-tab" id="panel-tab-chat" style="display: none">
@@ -932,14 +932,16 @@ if ('ontouchstart' in window) {
 		var e = event.originalEvent.touches[0];
 		var offsetX = e.clientX - $(this).offset().left;
 		var offsetY = e.clientY - $(this).offset().top;
-		if (offsetY < 34) {
-			if (offsetX > 33 && offsetX < 66) {
+		var width = $(this).width();
+		var height = $(this).height();
+		if (offsetY < height / 2) {
+			if (offsetX > width / 3 && offsetX < 2 * width / 3) {
 				Keyboard._keys[Keyboard.UP] = true;
 			}
 		} else {
-			if (offsetX <= 33) {
+			if (offsetX <= width / 3) {
 				Keyboard._keys[Keyboard.LEFT] = true;
-			} else if (offsetX <= 66) {
+			} else if (offsetX <= 2 * width / 3) {
 				Keyboard._keys[Keyboard.DOWN] = true;
 			} else {
 				Keyboard._keys[Keyboard.RIGHT] = true;
