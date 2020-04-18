@@ -776,6 +776,42 @@ $('#room-form').submit(function(e){
 	connection.connect();
 });
 
+$('body').on('click', '.iframe-div-area', function(e){
+    if ($(this).is('.max')) {
+        $('iframe', this.parentNode).css({
+            position: 'relative',
+            left: '0px',
+            top: '0px',
+            width: '100%',
+            height: '100%',
+        });
+        $(this).css({
+            position: 'absolute',
+            left: '0px',
+            top: '0px',
+            width: '100%',
+            height: '100%',
+        });
+        $(this).removeClass('max');
+    } else {
+        $('iframe', this.parentNode).css({
+            position: 'fixed',
+            left: '50px',
+            top: '50px',
+            width: $('body').width() - 100,
+            height: window.innerHeight - 100,
+        });
+        $(this).css({
+            position: 'fixed',
+            left: '0px',
+            top: '0px',
+            width: $('body').width(),
+            height: window.innerHeight,
+        });
+        $(this).addClass('max');
+    }
+});
+
 </script>
 </body>
 </html>
