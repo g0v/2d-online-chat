@@ -458,6 +458,19 @@ Game.getDrawingHeroes = function(){
                 hero.messages = object.data.say.split("\n").map(function(e){ return [e]; });
             }
         }
+
+        hero.messages = hero.messages.map(function(message){
+            if (message[0].match(/\$people/)) {
+                if (room) {
+                    c = room.getParticipantCount();
+                } else {
+                    c = 1;
+                }
+                message[0] = message[0].replace(/\$people/, c);
+            }
+            return message;
+        });
+
         character = object.data.character;
 		if ('undefined' === typeof(hero.image)) {
             var image = Loader.getImage('hero:' + character);
