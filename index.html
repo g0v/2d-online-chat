@@ -793,6 +793,7 @@ $('body').on('click', '.iframe-div-area', function(e){
             top: '0px',
             width: '100%',
             height: '100%',
+            'z-index': 15,
         });
         $(this).removeClass('max');
     } else {
@@ -810,6 +811,7 @@ $('body').on('click', '.iframe-div-area', function(e){
             top: '0px',
             width: $('body').width(),
             height: window.innerHeight,
+            'z-index': 21,
         });
         $(this).addClass('max');
     }
