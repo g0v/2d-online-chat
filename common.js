@@ -550,7 +550,7 @@ Game.getDrawingHeroes = function(){
                      width = Math.max(width, metric.width);
                      height += metric.actualBoundingBoxAscent + metric.actualBoundingBoxDescent + 2;
                     var message_idx = -1;
-                    var duration = 2;
+                    var duration = 4 + (hero.messages.length % 2);
                     switch(hero.say_type){
                         case '4':
                             message_idx = parseInt(((new Date()).getTime()/(1000*duration)))%hero.messages.length
