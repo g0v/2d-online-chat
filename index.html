@@ -759,29 +759,36 @@ var add_object_step3_enable = function(id){
     $('#form-add-object').data('target', id);
 };
 
-var name = prompt('What is your name?', localStorage.getItem('name'));
-localStorage.setItem('name', name);
-$('#name').val(name);
-room_id = $('#room-form [name="room-name"]').val();
-loadRoomData(room_id);
-$('#room-form').hide();
-$('#joined-form').show();
+$('#room-form').submit(function(e) {
+  e.preventDefault();
+  room_id = $('#room-form [name="room-name"]').val();
+  loadRoomData(room_id);
+  $('#room-form').hide();
+  $('#joined-form').show();
 
-JitsiMeetJS.init(initOptions);
-confOptions.confID = 'jitsi.jothon.online/' + room_id;
-connection = new JitsiMeetJS.JitsiConnection(null, null, options);
+  Game.onload(function() {
+    var d = new Promise(function(resolve, reject) {
+      JitsiMeetJS.init(initOptions);
+      confOptions.confID = 'jitsi.jothon.online/' + room_id;
+      connection = new JitsiMeetJS.JitsiConnection(null, null, options);
 
-connection.addEventListener(
-    JitsiMeetJS.events.connection.CONNECTION_ESTABLISHED,
-    onConnectionSuccess);
-connection.addEventListener(
-    JitsiMeetJS.events.connection.CONNECTION_FAILED,
-    onConnectionFailed);
-connection.addEventListener(
-    JitsiMeetJS.events.connection.CONNECTION_DISCONNECTED,
-    disconnect);
+      connection.addEventListener(
+        JitsiMeetJS.events.connection.CONNECTION_ESTABLISHED,
+        onConnectionSuccess);
+      connection.addEventListener(
+        JitsiMeetJS.events.connection.CONNECTION_FAILED,
+        onConnectionFailed);
+      connection.addEventListener(
+        JitsiMeetJS.events.connection.CONNECTION_DISCONNECTED,
+        disconnect);
 
-connection.connect();
+      connection.connect();
+      resolve();
+    });
+    return d;
+  });
+});
+
 $(window).bind('beforeunload', unload);
 $(window).bind('unload', unload);
 function unload() {

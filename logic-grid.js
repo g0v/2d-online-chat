@@ -242,10 +242,17 @@ Hero.prototype._collide = function (dirx, diry) {
     }
 };
 
+var load_functions = [Loader.loadImage('tiles', 'sprite/open_tileset.png')];
+Game.onload = function(callback) {
+    if (this.isLoad) {
+        callback();
+    } else {
+        load_functions.push(callback());
+    }
+};
+
 Game.load = function () {
-    return [
-        Loader.loadImage('tiles', 'sprite/open_tileset.png'),
-    ];
+    return load_functions;
 };
 
 Game.objects = {};

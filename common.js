@@ -83,6 +83,7 @@ Game.run = function (context) {
     this._previousElapsed = 0;
 
     var p = this.load();
+    this.isLoad = true;
     Promise.all(p).then(function (loaded) {
         this.init();
         window.requestAnimationFrame(this.tick);
