@@ -451,6 +451,12 @@ Game.getDrawingHeroes = function(){
         hero.messages = [];
         if (object.data.say_type == 3) {
             hero.messages = object.data.say.split("\n").map(function(e){ return [e]; });
+        } else if (object.data.say_type == 2) {
+            var w = hero.x - Game.heroes.me.x;
+            var h = hero.y - Game.heroes.me.y;
+            if (w * w + h * h < 64 * 64) {
+                hero.messages = object.data.say.split("\n").map(function(e){ return [e]; });
+            }
         }
         character = object.data.character;
 		if ('undefined' === typeof(hero.image)) {
