@@ -782,6 +782,16 @@ connection.addEventListener(
     disconnect);
 
 connection.connect();
+$(window).bind('beforeunload', unload);
+$(window).bind('unload', unload);
+function unload() {
+    if (room) {
+        room.leave();
+    }
+    if (connection) {
+        connection.disconnect();
+    }
+}
 
 $('body').on('click', '.iframe-div-area', function(e){
     if ($(this).is('.max')) {
