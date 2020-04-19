@@ -331,8 +331,16 @@ Game.update = function (delta) {
     this.heroes.me.row = row;
     this.camera.update();
 
-	if (room) {
-		if (prev_update_pos === null || (new Date).getTime() - prev_update_pos > 100) {
+    if (room) {
+        var wait = 100;
+        var c = room.getParticipantCount();
+        if (c < 100) {
+            wait = 100;
+        } else {
+            wait = c;
+        }
+
+		if (prev_update_pos === null || (new Date).getTime() - prev_update_pos > wait) {
 			if (this.heroes.me.y_sent != this.heroes.me.y) {
 				this.heroes.me.y_sent = this.heroes.me.y;
 				room.setLocalParticipantProperty('top', parseInt(this.heroes.me.y));
