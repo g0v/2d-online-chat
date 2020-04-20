@@ -190,8 +190,13 @@ Game.getDrawingCustomObjects = function () {
                 target_width = target_height * ratio;
             }
 
+            if ('undefined' === typeof(object.data.image_type) || object.data.image_type  == 0) {
+                level = object.y2 + 16;
+            } else {
+                level = 0;
+            }
             objects.push([
-                object.y2 + 16,
+                level,
                 'drawImage',
                 [image, 0, 0, image.width, image.height,
                 (object.x + object.x2) / 2 - target_width / 2 - this.camera.x,
