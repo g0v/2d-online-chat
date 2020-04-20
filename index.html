@@ -836,6 +836,10 @@ $('#room-form').submit(function(e) {
   $('#room-form').hide();
   $('#joined-form').show();
 
+  if ('ontouchstart' in window) {
+      document.body.requestFullscreen();
+  }
+
   Game.onload(function() {
     var d = new Promise(function(resolve, reject) {
       JitsiMeetJS.init(initOptions);
