@@ -549,8 +549,8 @@ Game.getDrawingHeroes = function(){
                      hero.screenY + 28
                  );
                  ctx.textAlign = 'center';
-                 ctx.fillStyle = "white";
-                 ctx.fillText(hero.name, 
+                 ctx.fillStyle = hero.textColor || "white";
+                 ctx.fillText(hero.name,
                      hero.screenX,
                      hero.screenY + 28
                  );

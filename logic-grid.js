@@ -267,7 +267,8 @@ Game.init = function () {
     this.heroes = {};
     var character = $('#character').val();
 	var name = $('#name').val();
-	this.heroes.me = new Hero(map, 160, 160, character, name);
+    this.heroes.me = new Hero(map, 160, 160, character, name);
+    this.heroes.me.textColor = 'orange';
     this.camera = new Camera(map, width, height);
     this.camera.follow(this.heroes.me);
 
