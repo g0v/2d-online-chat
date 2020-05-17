@@ -118,7 +118,7 @@ Game.render = function () {};
 window.onload = function () {
     var context = document.getElementById('game').getContext('2d');
     document.getElementById('game').onmousemove = function(e){
-        Game.mouse = [e.clientX, e.clientY];
+        Game.mouse = [e.offsetX, e.offsetY];
     };
     document.getElementById('game').onmouseleave = function(e){
         Game.mouse = null;
