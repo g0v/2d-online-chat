@@ -486,13 +486,13 @@ Game.getDrawingHeroes = function(){
                  ctx.lineWidth = 3;
                  ctx.strokeText(hero.name, 
                      hero.screenX,
-                     hero.screenY - 20
+                     hero.screenY + 28
                  );
                  ctx.textAlign = 'center';
                  ctx.fillStyle = "white";
                  ctx.fillText(hero.name, 
                      hero.screenX,
-                     hero.screenY - 20
+                     hero.screenY + 28
                  );
 		
                  // message
