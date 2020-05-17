@@ -89,6 +89,7 @@ body {
                         <option value="0">Choose One</option>
                         <option value="npc">NPC</option>
                         <option value="image">Image</option>
+                        <option value="iframe">Iframe</option>
                         <!-- <option value="hackmd">HackMD</option> -->
                         <!-- <option value="textbox">textbox</option> -->
                         <!-- <option value="screenshare">Screen Share</option> -->
@@ -125,6 +126,11 @@ body {
                 </script>
                 <script id="tmpl-object-param-image" type="text/html">
                     Image URL: <input type="text" name="image_url"><br>
+                    <br>
+                    <button type="submit">Add Object</button>
+                </script>
+                <script id="tmpl-object-param-iframe" type="text/html">
+                    Iframe URL: <input type="text" name="iframe_url"><br>
                     <br>
                     <button type="submit">Add Object</button>
                 </script>
@@ -728,7 +734,7 @@ var add_object_step3_enable = function(id){
             y: parseInt($('#form-add-object [name="y"]').val()),
             data: {},
         };
-        if (type == 'image') {
+        if (type == 'image' || type == 'iframe') {
             Game.objects.preview.x2 = parseInt($('#form-add-object [name="x2"]').val());
             Game.objects.preview.y2 = parseInt($('#form-add-object [name="y2"]').val());
         }
