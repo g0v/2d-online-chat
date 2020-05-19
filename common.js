@@ -118,7 +118,7 @@ Game.render = function () {};
 window.onload = function () {
     var context = document.getElementById('game').getContext('2d');
     document.getElementById('game').onmousemove = function(e){
-        Game.mouse = [e.clientX, e.clientY];
+        Game.mouse = [e.offsetX, e.offsetY];
     };
     document.getElementById('game').onmouseleave = function(e){
         Game.mouse = null;
@@ -200,6 +200,25 @@ Game.getDrawingCustomObjects = function () {
                 target_height,
                 ]
             ]);
+        } else if (object.type == 'iframe') {
+            if (!$('#iframe-' + id).length) {
+                var iframe_dom = $('<div></div>').attr('id', 'iframe-' + id);
+                iframe_dom.append($('<iframe allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture"></iframe>').attr('src', object.data.iframe_url).css({margin: 0, padding: 0, border: 0, width: '100%', height: '100%', "z-index": 10}));
+                iframe_dom.append($('<div></div>').css({position: 'absolute', left: 0, top: 0, width: '100%', height: '100%', 'z-index': 15, cursor: 'pointer'}).addClass('iframe-div-area'));
+                $('body').append(iframe_dom);
+            }
+            var canvas_width = object.x2 - object.x + 32;
+            var canvas_height = object.y2 - object.y + 32;
+            $('#iframe-' + id).css({
+                width: canvas_width,
+                height: canvas_height,
+                position: 'absolute',
+                left: (object.x + object.x2) / 2 - canvas_width / 2 - this.camera.x + $('#game').offset().left,
+                top: (object.y + object.y2) / 2 - canvas_height / 2 - this.camera.y + $('#game').offset().top,
+                border: '0px',
+                margin: '0px',
+                padding: '0px',
+            });
         }
     }
     return objects;

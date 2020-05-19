@@ -2,11 +2,11 @@
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-<script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
-<script src="//jitsi.jothon.online/libs/lib-jitsi-meet.min.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
+<script src="https://jitsi.jothon.online/libs/lib-jitsi-meet.min.js"></script>
 <script src="common.js"></script>
 <script src="logic-grid.js"></script>
-<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.6/css/bootstrap.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.6/css/bootstrap.css">
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
 <style>
 body {
@@ -14,18 +14,19 @@ body {
 }
 
 #game {
-    width: 100%;
+    position: absolute;
     height: 100%;
 }
 
 #controller {
-    position: fixed;
+    position: absolute;
     height: 100%;
     right: 0px;
     top: 0px;
     opacity: 80%;
     display: flex;
     flex-direction: column;
+    z-index: 20;
 }
 
 #controller .panel-heading {
@@ -89,6 +90,7 @@ body {
                         <option value="0">Choose One</option>
                         <option value="npc">NPC</option>
                         <option value="image">Image</option>
+                        <option value="iframe">Iframe</option>
                         <!-- <option value="hackmd">HackMD</option> -->
                         <!-- <option value="textbox">textbox</option> -->
                         <!-- <option value="screenshare">Screen Share</option> -->
@@ -125,6 +127,11 @@ body {
                 </script>
                 <script id="tmpl-object-param-image" type="text/html">
                     Image URL: <input type="text" name="image_url"><br>
+                    <br>
+                    <button type="submit">Add Object</button>
+                </script>
+                <script id="tmpl-object-param-iframe" type="text/html">
+                    Iframe URL: <input type="text" name="iframe_url"><br>
                     <br>
                     <button type="submit">Add Object</button>
                 </script>
@@ -728,7 +735,7 @@ var add_object_step3_enable = function(id){
             y: parseInt($('#form-add-object [name="y"]').val()),
             data: {},
         };
-        if (type == 'image') {
+        if (type == 'image' || type == 'iframe') {
             Game.objects.preview.x2 = parseInt($('#form-add-object [name="x2"]').val());
             Game.objects.preview.y2 = parseInt($('#form-add-object [name="y2"]').val());
         }
@@ -768,6 +775,46 @@ $('#room-form').submit(function(e){
 		disconnect);
 
 	connection.connect();
+});
+
+$('body').on('click', '.iframe-div-area', function(e){
+    if ($(this).is('.max')) {
+        $('iframe', this.parentNode).css({
+            position: 'relative',
+            left: '0px',
+            top: '0px',
+            width: '100%',
+            height: '100%',
+            'z-index': 10,
+        });
+        $(this).css({
+            position: 'absolute',
+            left: '0px',
+            top: '0px',
+            width: '100%',
+            height: '100%',
+            'z-index': 15,
+        });
+        $(this).removeClass('max');
+    } else {
+        $('iframe', this.parentNode).css({
+            position: 'fixed',
+            left: '50px',
+            top: '50px',
+            width: $('body').width() - 100,
+            height: window.innerHeight - 100,
+            'z-index': 30,
+        });
+        $(this).css({
+            position: 'fixed',
+            left: '0px',
+            top: '0px',
+            width: $('body').width(),
+            height: window.innerHeight,
+            'z-index': 21,
+        });
+        $(this).addClass('max');
+    }
 });
 
 </script>
