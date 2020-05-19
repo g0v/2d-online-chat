@@ -53,13 +53,13 @@ body {
   border: 3px solid blue;
 }
 
-@media only screen and (max-height: 500px) { /* narrow */
+@media only screen and (orientation: landscape) and (max-height: 500px) { /* phone, landscape */
   #controller .panel-body ul.nav { display: none; }
   #controller .panel-heading { display: none; }
   #log-area { display: none; }
 }
 
-@media only screen and (max-width: 400px){ /* wide */
+@media only screen and (orientation: portrait) {  /* phone, portrait */
   #controller .panel-body ul.nav { display: none; }
   #controller .panel-heading { display: none; }
   #log-area { display: none; }
