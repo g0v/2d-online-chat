@@ -6,6 +6,7 @@
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
     <script src="https://jitsi.jothon.online/libs/lib-jitsi-meet.min.js"></script>
     <script src="common.js?"></script>
+    <script src="hero.js?"></script>
     <script src="logic-grid.js?"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.6/css/bootstrap.css">
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
@@ -392,8 +393,8 @@ body {
         } else {
           Game.heroes.me.camera_track.mute().then(function(){
             Game.heroes.me.camera_track.dispose();
-            Game.heroes.me.camera_track.detach(Game.heroes.me.video_dom);
-            delete(Game.heroes.me.video_dom);
+            Game.heroes.me.camera_track.detach(Game.heroes.me.videoDom);
+            delete(Game.heroes.me.videoDom);
             delete(Game.heroes.me.camera_track);
             $('#cam-switch').text('Camera: off');
           });
@@ -445,12 +446,12 @@ body {
           track.attach($(`#audio-${participant}`)[0]);
 
         } else if (track.getType() == 'video') {
-          if (!Game.heroes[participant].video_dom) {
-            Game.heroes[participant].video_dom = $('<video autoplay="1"></video>')[0];
+          if (!Game.heroes[participant].videoDom) {
+            Game.heroes[participant].videoDom = $('<video autoplay="1"></video>')[0];
             Game.heroes[participant].video_track = track;
-            $('#video-pool').append(Game.heroes[participant].video_dom);
+            $('#video-pool').append(Game.heroes[participant].videoDom);
           }
-          track.attach(Game.heroes[participant].video_dom);
+          track.attach(Game.heroes[participant].videoDom);
         }
       }
 
@@ -459,13 +460,13 @@ body {
           if (tracks[i].getType() === 'video') {
             Game.heroes.me.camera_track = tracks[i];
             room.addTrack(tracks[i]);
-            if (!Game.heroes.me.video_dom) {
-              Game.heroes.me.video_dom = $('<video autoplay="1"></video>')[0];
+            if (!Game.heroes.me.videoDom) {
+              Game.heroes.me.videoDom = $('<video autoplay="1"></video>')[0];
               Game.heroes.me.video_track = tracks[i];
-              $('#video-pool').append(Game.heroes.me.video_dom);
+              $('#video-pool').append(Game.heroes.me.videoDom);
             }
             $('#cam-switch').text('Camera: on');
-            tracks[i].attach(Game.heroes.me.video_dom);
+            tracks[i].attach(Game.heroes.me.videoDom);
           } else {
             Game.heroes.me.audio_track = tracks[i];
             room.addTrack(tracks[i]);
@@ -693,7 +694,7 @@ body {
         var id = $(this).parents('#object-list li').data('id');
         $.ajax({
           type: 'post',
-          url: api_url + 'rpg/deleteobject?room=' + encodeURIComponent(room_id) + '&room_object_id=' + encodeURIComponent(id),
+          url: API_URL + 'rpg/deleteobject?room=' + encodeURIComponent(room_id) + '&room_object_id=' + encodeURIComponent(id),
           success: function(ret){
             console.log(ret);
             loadRoomData(room_id)
@@ -717,7 +718,7 @@ body {
         if (target == 'preview') {
           $.ajax({
             type: 'post',
-            url: api_url + 'rpg/addobject?room=' + encodeURIComponent(room_id),
+            url: API_URL + 'rpg/addobject?room=' + encodeURIComponent(room_id),
             data: {data: JSON.stringify(Game.objects.preview)},
             success: function(ret){
               loadRoomData(room_id);
@@ -732,7 +733,7 @@ body {
         } else {
           $.ajax({
             type: 'post',
-            url: api_url + 'rpg/updateobject?room=' + encodeURIComponent(room_id) + '&room_object_id=' + encodeURIComponent(target),
+            url: API_URL + 'rpg/updateobject?room=' + encodeURIComponent(room_id) + '&room_object_id=' + encodeURIComponent(target),
             data: {data: JSON.stringify(Game.objects[target])},
             success: function(ret){
               loadRoomData(room_id);

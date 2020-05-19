@@ -2,10 +2,11 @@
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-<script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
 <script src="common.js"></script>
+<script src="hero.js"></script>
 <script src="map-editor.js"></script>
-<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.6/css/bootstrap.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.6/css/bootstrap.css">
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
 <style>
 #game {
@@ -48,14 +49,14 @@
             <script>
 $('#button-loadsample').click(function(e){
         e.preventDefault();
-        Game.loadSample();
+        // Game.loadSample();
 });
 
 $('#button-loadcloud').click(function(e){
     e.preventDefault();
     var room_name = $('[name="room_name"]').val();
     $.ajax({
-            url: api_url + 'rpg/getroom?room=' + encodeURIComponent(room_name),
+            url: API_URL + 'rpg/getroom?room=' + encodeURIComponent(room_name),
             success:  function(ret){
                 $('#cloud-version').text(new Date(1000 * ret.data.room_data.updated_at));
                 map.layers = ret.data.room_data.data;
@@ -72,7 +73,7 @@ $('#button-savecloud').click(function(e){
     var room_name = $('[name="room_name"]').val();
     $.ajax({
             type: 'post',
-            url: api_url + 'rpg/updateroom?room=' + encodeURIComponent(room_name),
+            url: API_URL + 'rpg/updateroom?room=' + encodeURIComponent(room_name),
             data: {data: $('#result').val()},
             success:  function(ret){
                 $('#cloud-version').text(new Date(1000 * ret.updated_at));
@@ -86,19 +87,19 @@ $('#button-savecloud').click(function(e){
 $('[name="layer"]').change(function(){
         $('#label-object').html('');
         var layer = $(this).val();
-        if ('undefined' === typeof(tile_groups[layer])) {
+        if ('undefined' === typeof(TILE_GROUPS[layer])) {
             return;
         }
-        tile_groups[layer].map(function(line){
+        TILE_GROUPS[layer].map(function(line){
             line.map(function(obj){
-                if ('undefined' === typeof(tile_map[obj])) {
+                if ('undefined' === typeof(TILE_MAP[obj])) {
                     return;
                 }
                 var object_dom = $('<span></span>').css({
                         width: 32,
                         height: 32,
                         display: 'inline-block',
-                        "background-position": (-32 * tile_map[obj][0]) + 'px ' + (-32 * tile_map[obj][1]) + 'px',
+                        "background-position": (-32 * TILE_MAP[obj][0]) + 'px ' + (-32 * TILE_MAP[obj][1]) + 'px',
                         'background-image': 'url(sprite/open_tileset.png)',
                 }).addClass('map-object').data('object', obj);
 
@@ -113,11 +114,11 @@ $('#label-object').on('click', '.map-object', function(e){
     $(this).addClass('choosed');
 });
 if (localStorage.getItem('config')) {
-    map.layers = JSON.parse(localStorage.getItem('config'));
-    
-    updateLayerConfig();
+  map.layers = JSON.parse(localStorage.getItem('config'));
+
+  updateLayerConfig();
 } else {
-    Game.loadSample();
+  // Game.loadSample();
 }
 
 $('.size-column').change(function(){
