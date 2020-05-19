@@ -836,7 +836,7 @@ $('#room-form').submit(function(e) {
   $('#room-form').hide();
   $('#joined-form').show();
 
-  if ('ontouchstart' in window) {
+  if ('ontouchstart' in window && 'requestFullscreen' in document.body) {
       document.body.requestFullscreen();
   }
 
