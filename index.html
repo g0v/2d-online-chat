@@ -1,962 +1,939 @@
 <!DOCTYPE html>
 <html>
-<head>
-<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
-<script src="https://jitsi.jothon.online/libs/lib-jitsi-meet.min.js"></script>
-<script src="common.js?"></script>
-<script src="logic-grid.js?"></script>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.6/css/bootstrap.css">
-<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
-<style>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
+    <script src="https://jitsi.jothon.online/libs/lib-jitsi-meet.min.js"></script>
+    <script src="common.js?"></script>
+    <script src="logic-grid.js?"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.6/css/bootstrap.css">
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+    <style>
 body {
-    overflow: hidden;
+  overflow: hidden;
 }
 
 #game {
-    position: absolute;
-    width: 80%;
-    height: 100%;
+  position: absolute;
+  width: 80%;
+  height: 100%;
 }
 
 #controller {
-    position: absolute;
-    width: 20%;
-    height: 100%;
-    right: 0px;
-    top: 0px;
-    opacity: 80%;
-    display: flex;
-    flex-direction: column;
-    z-index: 20;
+  position: absolute;
+  width: 20%;
+  height: 100%;
+  right: 0px;
+  top: 0px;
+  opacity: 80%;
+  display: flex;
+  flex-direction: column;
+  z-index: 20;
 }
 
 #controller .panel-heading {
-    flex: 1;
+  flex: 1;
 }
+
 #controller .panel-body {
-    /* display: flex; */
-    flex-direction: column;
-    flex-grow: 100;
+  /* display: flex; */
+  flex-direction: column;
+  flex-grow: 100;
 }
+
 .panel-tab {
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-    flex: 1;
-}
-
-#login-form {
-    display: flex;
-    flex-direction: column;
-    height: 100%;
-}
-
-#login-form h1 {
-    flex: 0;
-}
-
-#login-form .name-input,.character-input {
-    flex: 0;
-}
-
-#login-form .character-input {
-    overflow: scroll;
-    flex: 1;
-}
-
-#login-form .button-area {
-    flex: 0;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
 }
 
 .character.choosed {
-    border: 3px solid blue;
+  border: 3px solid blue;
 }
 
-@media only screen and (max-height: 500px){ /* narrow */
-	#controller .panel-body ul.nav { display: none; }
-	#controller .panel-heading { display: none; }
-	#log-area { display: none; }
+@media only screen and (max-height: 500px) { /* narrow */
+  #controller .panel-body ul.nav { display: none; }
+  #controller .panel-heading { display: none; }
+  #log-area { display: none; }
 }
 
 @media only screen and (max-width: 400px){ /* wide */
-	#controller .panel-body ul.nav { display: none; }
-	#controller .panel-heading { display: none; }
-	#log-area { display: none; }
-	#controller {
-		width: 100%;
-		height: 20%;
-	}
-	#game {
-		top: 20%;
-		width: 100%;
-		height: 80%;
-	}
+  #controller .panel-body ul.nav { display: none; }
+  #controller .panel-heading { display: none; }
+  #log-area { display: none; }
+  #controller {
+    width: 100%;
+    height: 20%;
+  }
+  #game {
+    top: 20%;
+    width: 100%;
+    height: 80%;
+  }
 }
 
 #arrow-controller img {
-    -webkit-touch-callout: none;
-    -ms-touch-callout: none;
-    -moz-touch-callout: none;
-    -o-touch-callout: none;
-    touch-callout: none;
+  -webkit-touch-callout: none;
+  -ms-touch-callout: none;
+  -moz-touch-callout: none;
+  -o-touch-callout: none;
+  touch-callout: none;
 }
 
-</style>
-</head>
-<body>
-<canvas id="game"></canvas>
-<div class="panel panel-default" id="controller">
-    <div class="panel-heading">Jothon Online 2D RPG</div>
-    <div class="panel-body">
+    </style>
+  </head>
+  <body>
+    <canvas id="game"></canvas>
+    <div class="panel panel-default" id="controller">
+      <div class="panel-heading">Jothon Online 2D RPG</div>
+      <div class="panel-body">
         <form id="joined-form" style="flex: 1; display:none" autocomplete="off">
-            <div>Say: <input type="text" id="say" placeholder="say something?"></div>
-            <button id="mic-switch" type="button">Mic: on</button>
-            <button id="cam-switch" type="button">Camera: off</button>
+          <div>Say: <input type="text" id="say" placeholder="say something?"></div>
+          <button id="mic-switch" type="button">Mic: on</button>
+          <button id="cam-switch" type="button">Camera: off</button>
         </form>
         <ul class="nav nav-tabs" style="flex: 1">
-            <li role="presentation" class="nav-tab active" id="nav-tab-info"><a href="#">Info</a></li>
-            <li role="presentation" class="nav-tab" id="nav-tab-chat"><a href="#">Chat</a></li>
-            <li role="presentation" class="nav-tab" id="nav-tab-member"><a href="#">Members(<span id="member-count">0</span>)</a></li>
-            <li role="presentation" class="nav-tab" id="nav-tab-object"><a href="#">Objects(<span id="object-count">0</span>)</a></li>
+          <li role="presentation" class="nav-tab active" id="nav-tab-info"><a href="#">Info</a></li>
+          <li role="presentation" class="nav-tab" id="nav-tab-chat"><a href="#">Chat</a></li>
+          <li role="presentation" class="nav-tab" id="nav-tab-member"><a href="#">Members(<span id="member-count">0</span>)</a></li>
+          <li role="presentation" class="nav-tab" id="nav-tab-object"><a href="#">Objects(<span id="object-count">0</span>)</a></li>
         </ul>
 
         <div class="panel-tab" id="panel-tab-info">
-            <div>
-                Name: <input type="text" id="name" value="nobody"><br>
-                Character: <select id="character"></select>
-                <form id="room-form">
-                    Room: <input type="text" name="room-name" value="chat2d">
-                    <button type="submit">Join</button>
-                </form>
-            </div>
-            ➡️ 移動：使用方向鍵或點擊地圖上任何地方<br>
-            ❤️ 說話：點擊上方表情符號<br>
-            🎬 影片：點擊地圖上的影片，放大觀看<br>
-            💁🏻‍♀️ 靠近 NPC 他們會說話喔<br>
-			<div id ="log-area">
-				Log:<br>
-				<textarea readonly="readonly" id="log" style="width: 100%; flex-grow: 2"></textarea>
-			</div>
-			<div id="arrow-controller" style="display: none; position: fixed; bottom: 10px; left: 10px; ">
-				<img src="100px-Arrow_keys.svg.png" width="200%" height="200%">
-			</div>
+          <div>
+            Name: <input type="text" id="name" value="nobody"><br>
+            Character: <select id="character"></select>
+            <form id="room-form">
+              Room: <input type="text" name="room-name" value="chat2d">
+              <button type="submit">Join</button>
+            </form>
+          </div>
+          ➡️ 移動：使用方向鍵或點擊地圖上任何地方<br>
+          ❤️ 說話：點擊上方表情符號<br>
+          🎬 影片：點擊地圖上的影片，放大觀看<br>
+          💁🏻‍♀️ 靠近 NPC 他們會說話喔<br>
+          <div id ="log-area">
+            Log:<br>
+            <textarea readonly="readonly" id="log" style="width: 100%; flex-grow: 2"></textarea>
+          </div>
+          <div id="arrow-controller" style="display: none; position: fixed; bottom: 10px; left: 10px; ">
+            <img src="100px-Arrow_keys.svg.png" width="200%" height="200%">
+          </div>
         </div>
         <div class="panel-tab" id="panel-tab-chat" style="display: none">
-            <textarea id="chat" readonly="readonly" style="height:100%; width: 100%"></textarea>
+          <textarea id="chat" readonly="readonly" style="height:100%; width: 100%"></textarea>
         </div>
         <div class="panel-tab" id="panel-tab-member" style="display: none">
-            <ul id="member-list"></ul>
+          <ul id="member-list"></ul>
         </div>
         <div class="panel-tab" id="panel-tab-object" style="display: none">
-            <button id="add-object">Add Object</button>
-            <ol id="object-list">
-            </ol>
-            <form method="post" id="form-add-object" style="display: none">
-                <div id="add-object-step-1">
-                    Object Type: <select name="type">
-                        <option value="0">Choose One</option>
-                        <option value="npc">NPC</option>
-                        <option value="image">Image</option>
-                        <option value="iframe">Iframe</option>
-                        <!-- <option value="hackmd">HackMD</option> -->
-                        <!-- <option value="textbox">textbox</option> -->
-                        <!-- <option value="screenshare">Screen Share</option> -->
-                    </select>
-                </div>
-                <div id="add-object-step-2" style="display:none">
-                    Position:
-                    <input type="hidden" name="x">
-                    <input type="hidden" name="y">
-                    <input type="hidden" name="x2">
-                    <input type="hidden" name="y2">
-                    <span id="add-object-pos"></span>
-                    <button id="button-pos">Click me and click the map</button><br>
-                </div>
-                <div id="add-object-step-3" style="display:none">
-                </div>
-                <script id="tmpl-object-param-npc" type="text/html">
-                    Name: <input type="text" name="name"><br>
-                    Character: <select name="character"></select><br>
-                    Way: <select name="row">
-                        <option value="3">Up</option>
-                        <option value="0">Down</option>
-                        <option value="1">Left</option>
-                        <option value="2">Right</option>
-                    </select><br>
-                    Say Type: <select name="say_type">
-                        <option value="1">Nothing</option>
-                        <option value="2">Nearby</option>
-                        <option value="3">Always</option>
-                        <option value="4">Carousel</option>
-                        <option value="5">Nearby and Carousel</option>
-                    </select><br>
-                    Say: <textarea name="say"></textarea>
-                    <br>
-                    <button type="submit">Add Object</button>
-                </script>
-                <script id="tmpl-object-param-image" type="text/html">
-                    Image URL: <input type="text" name="image_url"><br>
-                    <br>
-                    Image Type: <select name="image_type">
-                        <option value="0">Wall</option>
-                        <option value="1">Ground</option>
-                    </select>
-                    <br>
-                    <button type="submit">Add Object</button>
-                </script>
-                <script id="tmpl-object-param-iframe" type="text/html">
-                    Iframe URL: <input type="text" name="iframe_url"><br>
-                    <br>
-                    <button type="submit">Add Object</button>
-                </script>
-                <button type="button" class="button-cancel">Cancel</button>
-            </form>
+          <button id="add-object">Add Object</button>
+          <ol id="object-list">
+          </ol>
+          <form method="post" id="form-add-object" style="display: none">
+            <div id="add-object-step-1">
+              Object Type: <select name="type">
+                <option value="0">Choose One</option>
+                <option value="npc">NPC</option>
+                <option value="image">Image</option>
+                <option value="iframe">Iframe</option>
+                <!-- <option value="hackmd">HackMD</option> -->
+                <!-- <option value="textbox">textbox</option> -->
+                <!-- <option value="screenshare">Screen Share</option> -->
+              </select>
+            </div>
+            <div id="add-object-step-2" style="display:none">
+              Position:
+              <input type="hidden" name="x">
+              <input type="hidden" name="y">
+              <input type="hidden" name="x2">
+              <input type="hidden" name="y2">
+              <span id="add-object-pos"></span>
+              <button id="button-pos">Click me and click the map</button><br>
+            </div>
+            <div id="add-object-step-3" style="display:none">
+            </div>
+            <script id="tmpl-object-param-npc" type="text/html">
+              Name: <input type="text" name="name"><br>
+              Character: <select name="character"></select><br>
+              Way: <select name="row">
+                <option value="3">Up</option>
+                <option value="0">Down</option>
+                <option value="1">Left</option>
+                <option value="2">Right</option>
+              </select><br>
+              Say Type: <select name="say_type">
+                <option value="1">Nothing</option>
+                <option value="2">Nearby</option>
+                <option value="3">Always</option>
+                <option value="4">Carousel</option>
+                <option value="5">Nearby and Carousel</option>
+              </select><br>
+              Say: <textarea name="say"></textarea><br>
+              <button type="submit">Add Object</button>
+            </script>
+            <script id="tmpl-object-param-image" type="text/html">
+              Image URL: <input type="text" name="image_url"><br>
+              <br>
+              Image Type: <select name="image_type">
+                <option value="0">Wall</option>
+                <option value="1">Ground</option>
+              </select><br>
+              <button type="submit">Add Object</button>
+            </script>
+            <script id="tmpl-object-param-iframe" type="text/html">
+              Iframe URL: <input type="text" name="iframe_url"><br>
+              <br>
+              <button type="submit">Add Object</button>
+            </script>
+            <button type="button" class="button-cancel">Cancel</button>
+          </form>
         </div>
-    </div>
-    <script>
+      </div>
+      <script>
         $('.nav-tab').click(function(e){
-                e.preventDefault();
-                $('.panel-tab').hide();
-                $('#panel-tab-' + $(this).attr('id').split('-')[2]).show();
-                $('.nav-tab').removeClass('active');
-                $(this).addClass('active');
+          e.preventDefault();
+          $('.panel-tab').hide();
+          $('#panel-tab-' + $(this).attr('id').split('-')[2]).show();
+          $('.nav-tab').removeClass('active');
+          $(this).addClass('active');
         });
-    </script>
-</div>
-<div id="video-pool" style="display:none"></div>
-<script>
-let connection = null;
-let room = null;
+      </script>
+    </div>
+    <div id="video-pool" style="display:none"></div>
+    <script>
+      let connection = null;
+      let room = null;
 
-if (localStorage.getItem('name')) {
-    $('#name').val(localStorage.getItem('name'));
-}
+      if (localStorage.getItem('name')) {
+        $('#name').val(localStorage.getItem('name'));
+      }
 
-if (location.search.match(/room=([^&]*)/)) {
-    var matches = location.search.match(/room=([^&]*)/);
-    room_id = matches[1];
-} else {
-    room_id = 'chat2d';
-}
-$('input[name="room-name"]').val(room_id);
-loadRoomData(room_id);
-var characters = [
-    'school uniform 1/su1 Student fmale 01',
-    'school uniform 1/su1 Student fmale 02',
-    'school uniform 1/su1 Student fmale 03',
-    'school uniform 1/su1 Student fmale 04',
-    'school uniform 1/su1 Student fmale 05',
-    'school uniform 1/su1 Student fmale 06',
-    'school uniform 1/su1 Student fmale 07',
-    'school uniform 1/su1 Student fmale 08',
-    'school uniform 1/su1 Student fmale 09',
-    'school uniform 1/su1 Student fmale 10',
-    'school uniform 1/su1 Student fmale 11',
-    'school uniform 1/su1 Student fmale 12',
-    'school uniform 1/su1 Student fmale 13',
-    'school uniform 1/su1 Student fmale 14',
-    'school uniform 1/su1 Student fmale 15',
-    'school uniform 1/su1 Student fmale 16',
-    'school uniform 1/su1 Student fmale 17',
-    'school uniform 1/su1 Student fmale 18',
-    'school uniform 1/su1 Student male 01',
-    'school uniform 1/su1 Student male 02',
-    'school uniform 1/su1 Student male 03',
-    'school uniform 1/su1 Student male 04',
-    'school uniform 1/su1 Student male 05',
-    'school uniform 1/su1 Student male 06',
-    'school uniform 1/su1 Student male 07',
-    'school uniform 1/su1 Student male 08',
-    'school uniform 1/su1 Student male 09',
-    'school uniform 1/su1 Student male 10',
-    'school uniform 1/su1 Student male 11',
-    'school uniform 1/su1 Student male 12',
-    'school uniform 1/su1 Student male 13',
-    'school uniform 2/su2 Student fmale 01',
-    'school uniform 2/su2 Student fmale 02',
-    'school uniform 2/su2 Student fmale 03',
-    'school uniform 2/su2 Student fmale 04',
-    'school uniform 2/su2 Student fmale 05',
-    'school uniform 2/su2 Student fmale 06',
-    'school uniform 2/su2 Student fmale 07',
-    'school uniform 2/su2 Student fmale 08',
-    'school uniform 2/su2 Student fmale 09',
-    'school uniform 2/su2 Student fmale 10',
-    'school uniform 2/su2 Student fmale 11',
-    'school uniform 2/su2 Student fmale 12',
-    'school uniform 2/su2 Student fmale 13',
-    'school uniform 2/su2 Student fmale 14',
-    'school uniform 2/su2 Student fmale 15',
-    'school uniform 2/su2 Student fmale 16',
-    'school uniform 2/su2 Student fmale 17',
-    'school uniform 2/su2 Student fmale 18',
-    'school uniform 2/su2 Student male 01',
-    'school uniform 2/su2 Student male 02',
-    'school uniform 2/su2 Student male 03',
-    'school uniform 2/su2 Student male 04',
-    'school uniform 2/su2 Student male 05',
-    'school uniform 2/su2 Student male 06',
-    'school uniform 2/su2 Student male 07',
-    'school uniform 2/su2 Student male 08',
-    'school uniform 2/su2 Student male 09',
-    'school uniform 2/su2 Student male 10',
-    'school uniform 2/su2 Student male 11',
-    'school uniform 2/su2 Student male 12',
-    'school uniform 2/su2 Student male 13',
-    'school uniform 3/su3 Student fmale 01',
-    'school uniform 3/su3 Student fmale 02',
-    'school uniform 3/su3 Student fmale 03',
-    'school uniform 3/su3 Student fmale 04',
-    'school uniform 3/su3 Student fmale 05',
-    'school uniform 3/su3 Student fmale 06',
-    'school uniform 3/su3 Student fmale 07',
-    'school uniform 3/su3 Student fmale 08',
-    'school uniform 3/su3 Student fmale 09',
-    'school uniform 3/su3 Student fmale 10',
-    'school uniform 3/su3 Student fmale 11',
-    'school uniform 3/su3 Student fmale 12',
-    'school uniform 3/su3 Student fmale 13',
-    'school uniform 3/su3 Student fmale 14',
-    'school uniform 3/su3 Student fmale 15',
-    'school uniform 3/su3 Student fmale 16',
-    'school uniform 3/su3 Student fmale 17',
-    'school uniform 3/su3 Student fmale 18',
-    'school uniform 3/su3 Student male 01',
-    'school uniform 3/su3 Student male 02',
-    'school uniform 3/su3 Student male 03',
-    'school uniform 3/su3 Student male 04',
-    'school uniform 3/su3 Student male 05',
-    'school uniform 3/su3 Student male 06',
-    'school uniform 3/su3 Student male 07',
-    'school uniform 3/su3 Student male 08',
-    'school uniform 3/su3 Student male 09',
-    'school uniform 3/su3 Student male 10',
-    'school uniform 3/su3 Student male 11',
-    'school uniform 3/su3 Student male 12',
-    'school uniform 3/su3 Student male 13',
-    'school uniform 4/su4 Student fmale 01',
-    'school uniform 4/su4 Student fmale 02',
-    'school uniform 4/su4 Student fmale 03',
-    'school uniform 4/su4 Student fmale 04',
-    'school uniform 4/su4 Student fmale 05',
-    'school uniform 4/su4 Student fmale 06',
-    'school uniform 4/su4 Student fmale 07',
-    'school uniform 4/su4 Student fmale 08',
-    'school uniform 4/su4 Student fmale 09',
-    'school uniform 4/su4 Student fmale 10',
-    'school uniform 4/su4 Student fmale 11',
-    'school uniform 4/su4 Student fmale 12',
-    'school uniform 4/su4 Student fmale 13',
-    'school uniform 4/su4 Student fmale 14',
-    'school uniform 4/su4 Student fmale 15',
-    'school uniform 4/su4 Student fmale 16',
-    'school uniform 4/su4 Student fmale 17',
-    'school uniform 4/su4 Student fmale 18',
-    'school uniform 4/su4 Student male 01',
-    'school uniform 4/su4 Student male 02',
-    'school uniform 4/su4 Student male 03',
-    'school uniform 4/su4 Student male 04',
-    'school uniform 4/su4 Student male 05',
-    'school uniform 4/su4 Student male 06',
-    'school uniform 4/su4 Student male 07',
-    'school uniform 4/su4 Student male 08',
-    'school uniform 4/su4 Student male 09',
-    'school uniform 4/su4 Student male 10',
-    'school uniform 4/su4 Student male 11',
-    'school uniform 4/su4 Student male 12',
-    'school uniform 4/su4 Student male 13',
-    'teachers/Headmaster fmale',
-    'teachers/Headmaster male',
-    'teachers/Teacher fmale 01',
-    'teachers/Teacher fmale 02',
-    'teachers/Teacher fmale 03',
-    'teachers/Teacher fmale 04',
-    'teachers/Teacher male 01',
-    'teachers/Teacher male 02',
-    'teachers/Teacher male 03',
-    'teachers/Teacher male 04',
-];
+      if (location.search.match(/room=([^&]*)/)) {
+        var matches = location.search.match(/room=([^&]*)/);
+        room_id = matches[1];
+      } else {
+        room_id = 'chat2d';
+      }
+      $('input[name="room-name"]').val(room_id);
+      loadRoomData(room_id);
+      var characters = [
+        'school uniform 1/su1 Student fmale 01',
+        'school uniform 1/su1 Student fmale 02',
+        'school uniform 1/su1 Student fmale 03',
+        'school uniform 1/su1 Student fmale 04',
+        'school uniform 1/su1 Student fmale 05',
+        'school uniform 1/su1 Student fmale 06',
+        'school uniform 1/su1 Student fmale 07',
+        'school uniform 1/su1 Student fmale 08',
+        'school uniform 1/su1 Student fmale 09',
+        'school uniform 1/su1 Student fmale 10',
+        'school uniform 1/su1 Student fmale 11',
+        'school uniform 1/su1 Student fmale 12',
+        'school uniform 1/su1 Student fmale 13',
+        'school uniform 1/su1 Student fmale 14',
+        'school uniform 1/su1 Student fmale 15',
+        'school uniform 1/su1 Student fmale 16',
+        'school uniform 1/su1 Student fmale 17',
+        'school uniform 1/su1 Student fmale 18',
+        'school uniform 1/su1 Student male 01',
+        'school uniform 1/su1 Student male 02',
+        'school uniform 1/su1 Student male 03',
+        'school uniform 1/su1 Student male 04',
+        'school uniform 1/su1 Student male 05',
+        'school uniform 1/su1 Student male 06',
+        'school uniform 1/su1 Student male 07',
+        'school uniform 1/su1 Student male 08',
+        'school uniform 1/su1 Student male 09',
+        'school uniform 1/su1 Student male 10',
+        'school uniform 1/su1 Student male 11',
+        'school uniform 1/su1 Student male 12',
+        'school uniform 1/su1 Student male 13',
+        'school uniform 2/su2 Student fmale 01',
+        'school uniform 2/su2 Student fmale 02',
+        'school uniform 2/su2 Student fmale 03',
+        'school uniform 2/su2 Student fmale 04',
+        'school uniform 2/su2 Student fmale 05',
+        'school uniform 2/su2 Student fmale 06',
+        'school uniform 2/su2 Student fmale 07',
+        'school uniform 2/su2 Student fmale 08',
+        'school uniform 2/su2 Student fmale 09',
+        'school uniform 2/su2 Student fmale 10',
+        'school uniform 2/su2 Student fmale 11',
+        'school uniform 2/su2 Student fmale 12',
+        'school uniform 2/su2 Student fmale 13',
+        'school uniform 2/su2 Student fmale 14',
+        'school uniform 2/su2 Student fmale 15',
+        'school uniform 2/su2 Student fmale 16',
+        'school uniform 2/su2 Student fmale 17',
+        'school uniform 2/su2 Student fmale 18',
+        'school uniform 2/su2 Student male 01',
+        'school uniform 2/su2 Student male 02',
+        'school uniform 2/su2 Student male 03',
+        'school uniform 2/su2 Student male 04',
+        'school uniform 2/su2 Student male 05',
+        'school uniform 2/su2 Student male 06',
+        'school uniform 2/su2 Student male 07',
+        'school uniform 2/su2 Student male 08',
+        'school uniform 2/su2 Student male 09',
+        'school uniform 2/su2 Student male 10',
+        'school uniform 2/su2 Student male 11',
+        'school uniform 2/su2 Student male 12',
+        'school uniform 2/su2 Student male 13',
+        'school uniform 3/su3 Student fmale 01',
+        'school uniform 3/su3 Student fmale 02',
+        'school uniform 3/su3 Student fmale 03',
+        'school uniform 3/su3 Student fmale 04',
+        'school uniform 3/su3 Student fmale 05',
+        'school uniform 3/su3 Student fmale 06',
+        'school uniform 3/su3 Student fmale 07',
+        'school uniform 3/su3 Student fmale 08',
+        'school uniform 3/su3 Student fmale 09',
+        'school uniform 3/su3 Student fmale 10',
+        'school uniform 3/su3 Student fmale 11',
+        'school uniform 3/su3 Student fmale 12',
+        'school uniform 3/su3 Student fmale 13',
+        'school uniform 3/su3 Student fmale 14',
+        'school uniform 3/su3 Student fmale 15',
+        'school uniform 3/su3 Student fmale 16',
+        'school uniform 3/su3 Student fmale 17',
+        'school uniform 3/su3 Student fmale 18',
+        'school uniform 3/su3 Student male 01',
+        'school uniform 3/su3 Student male 02',
+        'school uniform 3/su3 Student male 03',
+        'school uniform 3/su3 Student male 04',
+        'school uniform 3/su3 Student male 05',
+        'school uniform 3/su3 Student male 06',
+        'school uniform 3/su3 Student male 07',
+        'school uniform 3/su3 Student male 08',
+        'school uniform 3/su3 Student male 09',
+        'school uniform 3/su3 Student male 10',
+        'school uniform 3/su3 Student male 11',
+        'school uniform 3/su3 Student male 12',
+        'school uniform 3/su3 Student male 13',
+        'school uniform 4/su4 Student fmale 01',
+        'school uniform 4/su4 Student fmale 02',
+        'school uniform 4/su4 Student fmale 03',
+        'school uniform 4/su4 Student fmale 04',
+        'school uniform 4/su4 Student fmale 05',
+        'school uniform 4/su4 Student fmale 06',
+        'school uniform 4/su4 Student fmale 07',
+        'school uniform 4/su4 Student fmale 08',
+        'school uniform 4/su4 Student fmale 09',
+        'school uniform 4/su4 Student fmale 10',
+        'school uniform 4/su4 Student fmale 11',
+        'school uniform 4/su4 Student fmale 12',
+        'school uniform 4/su4 Student fmale 13',
+        'school uniform 4/su4 Student fmale 14',
+        'school uniform 4/su4 Student fmale 15',
+        'school uniform 4/su4 Student fmale 16',
+        'school uniform 4/su4 Student fmale 17',
+        'school uniform 4/su4 Student fmale 18',
+        'school uniform 4/su4 Student male 01',
+        'school uniform 4/su4 Student male 02',
+        'school uniform 4/su4 Student male 03',
+        'school uniform 4/su4 Student male 04',
+        'school uniform 4/su4 Student male 05',
+        'school uniform 4/su4 Student male 06',
+        'school uniform 4/su4 Student male 07',
+        'school uniform 4/su4 Student male 08',
+        'school uniform 4/su4 Student male 09',
+        'school uniform 4/su4 Student male 10',
+        'school uniform 4/su4 Student male 11',
+        'school uniform 4/su4 Student male 12',
+        'school uniform 4/su4 Student male 13',
+        'teachers/Headmaster fmale',
+        'teachers/Headmaster male',
+        'teachers/Teacher fmale 01',
+        'teachers/Teacher fmale 02',
+        'teachers/Teacher fmale 03',
+        'teachers/Teacher fmale 04',
+        'teachers/Teacher male 01',
+        'teachers/Teacher male 02',
+        'teachers/Teacher male 03',
+        'teachers/Teacher male 04',
+      ];
 
-characters.map(function(c) {
+      characters.map(function(c) {
         $('#character').append($('<option></option>').text(c));
-});
+      });
 
-$('#character option').eq(Math.floor(Math.random() * characters.length)).prop('selected', true);
+      $('#character option').eq(Math.floor(Math.random() * characters.length)).prop('selected', true);
 
-$('#character').change(function(e){
-	if ('undefined' !== typeof(Game.heroes)) {
-		Game.heroes.me.changeCharacter($(this).val());
-	}
-    $('#character').blur();
+      $('#character').change(function(e){
+        if ('undefined' !== typeof(Game.heroes)) {
+          Game.heroes.me.changeCharacter($(this).val());
+        }
+        $('#character').blur();
 
-	if (room) {
-		room.setLocalParticipantProperty('character', $(this).val());
-	}
-}).change();
+        if (room) {
+          room.setLocalParticipantProperty('character', $(this).val());
+        }
+      }).change();
 
-$('#name').keyup(function(e){
-    localStorage.setItem('name', $('#name').val());
-	Game.heroes.me.name = $(this).val();
-	if (room) {
-		room.setDisplayName($('#name').val());
-	}
-});
+      $('#name').keyup(function(e){
+        localStorage.setItem('name', $('#name').val());
+        Game.heroes.me.name = $(this).val();
+        if (room) {
+          room.setDisplayName($('#name').val());
+        }
+      });
 
-$('#cam-switch').click(function(e){
-    e.preventDefault();
-	if (!Game.heroes.me.camera_track) {
-        JitsiMeetJS.createLocalTracks({ devices: [ 'video' ] })
+      $('#cam-switch').click(function(e){
+        e.preventDefault();
+        if (!Game.heroes.me.camera_track) {
+          JitsiMeetJS.createLocalTracks({ devices: [ 'video' ] })
             .then(onLocalTracks)
             .catch(error => {
-                alert('權限錯誤 Permission Error: 無法得到攝影機權限 Error obtaining camera permission. ' + error);
-		});
-	} else {
-		Game.heroes.me.camera_track.mute().then(function(){
-			Game.heroes.me.camera_track.dispose();
-			Game.heroes.me.camera_track.detach(Game.heroes.me.video_dom);
-			delete(Game.heroes.me.video_dom);
-			delete(Game.heroes.me.camera_track);
-			$('#cam-switch').text('Camera: off');
-		});
-	}
-
-});
-
-$('#mic-switch').click(function(e){
-    e.preventDefault();
-    if (Game.heroes.me.audio_track.isMuted()) {
-        Game.heroes.me.audio_track.unmute();
-        $('#mic-switch').text('Mic: on');
-    } else {
-        Game.heroes.me.audio_track.mute();
-        $('#mic-switch').text('Mic: off');
-    }
-});
-
-$('#joined-form').submit(function(e){
-    e.preventDefault();
-    if (room && $('#say').val()) {
-        var say = $('#say').val();
-        room.sendTextMessage(say);
-        $('#say').val('');
-		Game.heroes.me.messages.push([say, (new Date).getTime() + 20 * 1000]);
-    }
-});
-
-$('body').keydown(function(e){
-    if ('Enter' == e.key) {
-        if ($('#say').is(':visible') && !$('#say').is(':focus')) {
-            $('#say').focus();
-        }
-        return;
-    }
-});
-
-function onConnectionFailed() {
-    alert("連線失敗，若瀏覽器有安裝 ad block 外掛可能會造成此錯誤。");
-}
-
-function onRemoteTrack(track) {
-    if (track.isLocal()) {
-        return;
-    }
-    const participant = track.getParticipantId();
-    if (track.getType() == 'audio') {
-        $('#game').append(`<audio id="audio-${participant}" autoplay="1" class="remote" />`);
-        track.attach($(`#audio-${participant}`)[0]);
-
-    } else if (track.getType() == 'video') {
-		if (!Game.heroes[participant].video_dom) {
-			Game.heroes[participant].video_dom = $('<video autoplay="1"></video>')[0];
-			Game.heroes[participant].video_track = track;
-			$('#video-pool').append(Game.heroes[participant].video_dom);
-		}
-		track.attach(Game.heroes[participant].video_dom);
-    }
-}
-
-function onLocalTracks(tracks) {
-    for (let i = 0; i < tracks.length; i++) {
-        if (tracks[i].getType() === 'video') {
-			Game.heroes.me.camera_track = tracks[i];
-			room.addTrack(tracks[i]);
-			if (!Game.heroes.me.video_dom) {
-				Game.heroes.me.video_dom = $('<video autoplay="1"></video>')[0];
-				Game.heroes.me.video_track = tracks[i];
-				$('#video-pool').append(Game.heroes.me.video_dom);
-			}
-			$('#cam-switch').text('Camera: on');
-			tracks[i].attach(Game.heroes.me.video_dom);
+              alert('權限錯誤 Permission Error: 無法得到攝影機權限 Error obtaining camera permission. ' + error);
+            });
         } else {
-			Game.heroes.me.audio_track = tracks[i];
+          Game.heroes.me.camera_track.mute().then(function(){
+            Game.heroes.me.camera_track.dispose();
+            Game.heroes.me.camera_track.detach(Game.heroes.me.video_dom);
+            delete(Game.heroes.me.video_dom);
+            delete(Game.heroes.me.camera_track);
+            $('#cam-switch').text('Camera: off');
+          });
+        }
+
+      });
+
+      $('#mic-switch').click(function(e){
+        e.preventDefault();
+        if (Game.heroes.me.audio_track.isMuted()) {
+          Game.heroes.me.audio_track.unmute();
+          $('#mic-switch').text('Mic: on');
+        } else {
+          Game.heroes.me.audio_track.mute();
+          $('#mic-switch').text('Mic: off');
+        }
+      });
+
+      $('#joined-form').submit(function(e){
+        e.preventDefault();
+        if (room && $('#say').val()) {
+          var say = $('#say').val();
+          room.sendTextMessage(say);
+          $('#say').val('');
+          Game.heroes.me.messages.push([say, (new Date).getTime() + 20 * 1000]);
+        }
+      });
+
+      $('body').keydown(function(e){
+        if ('Enter' == e.key) {
+          if ($('#say').is(':visible') && !$('#say').is(':focus')) {
+            $('#say').focus();
+          }
+          return;
+        }
+      });
+
+      function onConnectionFailed() {
+        alert("連線失敗，若瀏覽器有安裝 ad block 外掛可能會造成此錯誤。");
+      }
+
+      function onRemoteTrack(track) {
+        if (track.isLocal()) {
+          return;
+        }
+        const participant = track.getParticipantId();
+        if (track.getType() == 'audio') {
+          $('#game').append(`<audio id="audio-${participant}" autoplay="1" class="remote" />`);
+          track.attach($(`#audio-${participant}`)[0]);
+
+        } else if (track.getType() == 'video') {
+          if (!Game.heroes[participant].video_dom) {
+            Game.heroes[participant].video_dom = $('<video autoplay="1"></video>')[0];
+            Game.heroes[participant].video_track = track;
+            $('#video-pool').append(Game.heroes[participant].video_dom);
+          }
+          track.attach(Game.heroes[participant].video_dom);
+        }
+      }
+
+      function onLocalTracks(tracks) {
+        for (let i = 0; i < tracks.length; i++) {
+          if (tracks[i].getType() === 'video') {
+            Game.heroes.me.camera_track = tracks[i];
+            room.addTrack(tracks[i]);
+            if (!Game.heroes.me.video_dom) {
+              Game.heroes.me.video_dom = $('<video autoplay="1"></video>')[0];
+              Game.heroes.me.video_track = tracks[i];
+              $('#video-pool').append(Game.heroes.me.video_dom);
+            }
+            $('#cam-switch').text('Camera: on');
+            tracks[i].attach(Game.heroes.me.video_dom);
+          } else {
+            Game.heroes.me.audio_track = tracks[i];
             room.addTrack(tracks[i]);
             tracks[i].addEventListener(JitsiMeetJS.events.track.TRACK_AUDIO_LEVEL_CHANGED, function(audioLevel) {
-                if (!Game.heroes.me.audio_track.isMuted()) {
-					Game.heroes.me.audioLevel = audioLevel;
-                }
+              if (!Game.heroes.me.audio_track.isMuted()) {
+                Game.heroes.me.audioLevel = audioLevel;
+              }
             });
+          }
         }
-    }
-}
+      }
 
-function update_member_list() {
-    for (var id in room.participants) {
-        var participant = room.participants[id];
-		if ('undefined' === typeof(Game.heroes[id])) {
-			x = parseInt(participant.getProperty('left'));
-			y = parseInt(participant.getProperty('top'));
-			Game.heroes[id] = new Hero(map, x, y, participant.getProperty('character'), participant.getDisplayName());
-		}
-	}
-    $('#member-list').html('');
-    c = 0;
-    for (var id in Game.heroes) {
-        var li_dom = $('<li></li>');
-        var span_dom = $('<span></span>').css({
+      function update_member_list() {
+        for (var id in room.participants) {
+          var participant = room.participants[id];
+          if ('undefined' === typeof(Game.heroes[id])) {
+            x = parseInt(participant.getProperty('left'));
+            y = parseInt(participant.getProperty('top'));
+            Game.heroes[id] = new Hero(map, x, y, participant.getProperty('character'), participant.getDisplayName());
+          }
+        }
+        $('#member-list').html('');
+        c = 0;
+        for (var id in Game.heroes) {
+          var li_dom = $('<li></li>');
+          var span_dom = $('<span></span>').css({
             width: 32,
             height: 32,
             display: 'inline-block',
             'background-image': 'url("sprite/' + Game.heroes[id].character + '.png")',
             'background-position': '0px 0px',
+          });
+          li_dom.append(span_dom);
+          li_dom.append($('<span></span>').text(Game.heroes[id].name));
+
+          $('#member-list').append(li_dom);
+          c ++;
+        }
+        $('#member-count').text(c);
+      }
+
+      function addLog(log) {
+        $('#log').val($.trim($('#log').val() + "\n" + log));
+        $('#log').scrollTop($('#log')[0].scrollHeight - $('#log').height());
+
+      }
+
+      function onConferenceJoined() {
+        update_member_list();
+
+        room.on(JitsiMeetJS.events.conference.USER_JOINED, (id, user) => {
+          addLog(user.getDisplayName() + ' joined');
+          update_member_list();
         });
-        li_dom.append(span_dom);
-        li_dom.append($('<span></span>').text(Game.heroes[id].name));
 
-        $('#member-list').append(li_dom);
-        c ++;
-    }
-    $('#member-count').text(c);
-}
+        room.on(JitsiMeetJS.events.conference.MESSAGE_RECEIVED, (id, text, ts, nick, other) => {
+          $('#chat').val($.trim($('#chat').val() + "\n" + nick + ":" + text));
+          $('#chat').scrollTop($('#chat')[0].scrollHeight - $('#chat').height());
 
-function addLog(log) {
-    $('#log').val($.trim($('#log').val() + "\n" + log));
-    $('#log').scrollTop($('#log')[0].scrollHeight - $('#log').height());
-
-}
-
-function onConferenceJoined() {
-	update_member_list();
-
-    room.on(JitsiMeetJS.events.conference.USER_JOINED, (id, user) => {
-        addLog(user.getDisplayName() + ' joined');
-		update_member_list();
-    });
-
-    room.on(JitsiMeetJS.events.conference.MESSAGE_RECEIVED, (id, text, ts, nick, other) => {
-        $('#chat').val($.trim($('#chat').val() + "\n" + nick + ":" + text));
-        $('#chat').scrollTop($('#chat')[0].scrollHeight - $('#chat').height());
-
-        if ('undefined' !== typeof(Game.heroes[id])) {
+          if ('undefined' !== typeof(Game.heroes[id])) {
             if ('undefined' === typeof(ts)) {
-                ts_number = (new Date).getTime();
+              ts_number = (new Date).getTime();
             } else {
-                ts_number = (new Date(ts)).getTime();
+              ts_number = (new Date(ts)).getTime();
             }
             if (ts_number + 20 * 1000 < (new Date).getTime()) return;
-			Game.heroes[id].messages.push([text, ts_number + 20 * 1000]);
-        }
-    });
+            Game.heroes[id].messages.push([text, ts_number + 20 * 1000]);
+          }
+        });
 
-    room.on(JitsiMeetJS.events.conference.USER_LEFT, (id, user) => {
-        addLog(user.getDisplayName() + ' left');
-		delete(Game.heroes[id]);
-        update_member_list();
-    });
+        room.on(JitsiMeetJS.events.conference.USER_LEFT, (id, user) => {
+          addLog(user.getDisplayName() + ' left');
+          delete(Game.heroes[id]);
+          update_member_list();
+        });
 
-    room.on(JitsiMeetJS.events.conference.PARTICIPANT_PROPERTY_CHANGED, (user, text, ts) => {
-		var id = user.getId();
-		if (['top', 'left', 'character'].indexOf(text) >= 0) {
-			if ('undefined' !== typeof(Game.heroes[id])) {
-				var x, y;
-				x = parseInt(room.participants[id].getProperty('left'));
-				y = parseInt(room.participants[id].getProperty('top'));
-				if (!Number.isNaN(x) && !Number.isNaN(y)) {
-					Game.heroes[id].target_x = x;
-					Game.heroes[id].target_y = y;
-					if (Game.heroes[id].x == Game.heroes[id].y && Game.heroes[id].x == 0) {
-						Game.heroes[id].x = x;
-						Game.heroes[id].y = y;
-					}
-				}
-				if (Game.heroes[id].character != room.participants[id].getProperty('character')) {
-					Game.heroes[id].changeCharacter(room.participants[id].getProperty('character'));
-                    update_member_list();
-				}
-			}
-		} else {
-			console.log(text);
-		}
-    });
+        room.on(JitsiMeetJS.events.conference.PARTICIPANT_PROPERTY_CHANGED, (user, text, ts) => {
+          var id = user.getId();
+          if (['top', 'left', 'character'].indexOf(text) >= 0) {
+            if ('undefined' !== typeof(Game.heroes[id])) {
+              var x, y;
+              x = parseInt(room.participants[id].getProperty('left'));
+              y = parseInt(room.participants[id].getProperty('top'));
+              if (!Number.isNaN(x) && !Number.isNaN(y)) {
+                Game.heroes[id].target_x = x;
+                Game.heroes[id].target_y = y;
+                if (Game.heroes[id].x == Game.heroes[id].y && Game.heroes[id].x == 0) {
+                  Game.heroes[id].x = x;
+                  Game.heroes[id].y = y;
+                }
+              }
+              if (Game.heroes[id].character != room.participants[id].getProperty('character')) {
+                Game.heroes[id].changeCharacter(room.participants[id].getProperty('character'));
+                update_member_list();
+              }
+            }
+          } else {
+            console.log(text);
+          }
+        });
 
-    room.on(JitsiMeetJS.events.conference.ENDPOINT_MESSAGE_RECEIVED, (participant, message) => {
-        if (message.type == 'teleport') {
-			var id = participant.getId();
-			if ('undefined' !== typeof(Game.heroes[id])) {
-				Game.heroes[id].x = Game.heroes[id].target_x = message.message[0];
-				Game.heroes[id].y = Game.heroes[id].target_y = message.message[1];
-			}
-        }
-    });
-    room.on(JitsiMeetJS.events.conference.DISPLAY_NAME_CHANGED, (id, name) => {
-        addLog(Game.heroes[id].name + ' changed name to ' + name);
-		Game.heroes[id].name = name;
-        update_member_list();
-    });
+        room.on(JitsiMeetJS.events.conference.ENDPOINT_MESSAGE_RECEIVED, (participant, message) => {
+          if (message.type == 'teleport') {
+            var id = participant.getId();
+            if ('undefined' !== typeof(Game.heroes[id])) {
+              Game.heroes[id].x = Game.heroes[id].target_x = message.message[0];
+              Game.heroes[id].y = Game.heroes[id].target_y = message.message[1];
+            }
+          }
+        });
+        room.on(JitsiMeetJS.events.conference.DISPLAY_NAME_CHANGED, (id, name) => {
+          addLog(Game.heroes[id].name + ' changed name to ' + name);
+          Game.heroes[id].name = name;
+          update_member_list();
+        });
 
-    room.on(JitsiMeetJS.events.conference.TRACK_AUDIO_LEVEL_CHANGED, (id, audioLevel) => {
-        if ('undefined' !== typeof(Game.heroes[id])) {
-			Game.heroes[id].audioLevel = audioLevel;
-        }
-    });
-}
+        room.on(JitsiMeetJS.events.conference.TRACK_AUDIO_LEVEL_CHANGED, (id, audioLevel) => {
+          if ('undefined' !== typeof(Game.heroes[id])) {
+            Game.heroes[id].audioLevel = audioLevel;
+          }
+        });
+      }
 
-function onConnectionSuccess() {
-    confOptions.confID = 'jitsi.jothon.online/' + room_id;
-    room = connection.initJitsiConference(room_id, confOptions);
-    room.setDisplayName($('#name').val());
-	room.setLocalParticipantProperty('character', $('#character').val());
-	room.setLocalParticipantProperty('top', parseInt(Game.heroes.me.y));
-	room.setLocalParticipantProperty('left', parseInt(Game.heroes.me.x));
-    room.on(JitsiMeetJS.events.conference.TRACK_ADDED, onRemoteTrack);
-    room.on(JitsiMeetJS.events.conference.TRACK_REMOVED, track => {
-        console.log(`track removed!!!${track}`);
-    });
+      function onConnectionSuccess() {
+        confOptions.confID = 'jitsi.jothon.online/' + room_id;
+        room = connection.initJitsiConference(room_id, confOptions);
+        room.setDisplayName($('#name').val());
+        room.setLocalParticipantProperty('character', $('#character').val());
+        room.setLocalParticipantProperty('top', parseInt(Game.heroes.me.y));
+        room.setLocalParticipantProperty('left', parseInt(Game.heroes.me.x));
+        room.on(JitsiMeetJS.events.conference.TRACK_ADDED, onRemoteTrack);
+        room.on(JitsiMeetJS.events.conference.TRACK_REMOVED, track => {
+          console.log(`track removed!!!${track}`);
+        });
 
-    room.on(
-        JitsiMeetJS.events.conference.CONFERENCE_JOINED,
-        onConferenceJoined);
+        room.on(
+          JitsiMeetJS.events.conference.CONFERENCE_JOINED,
+          onConferenceJoined);
 
-	room.join();
+        room.join();
 
-	JitsiMeetJS.createLocalTracks({ devices: [ 'audio' ] })
-		.then(onLocalTracks);
-};
+        JitsiMeetJS.createLocalTracks({ devices: [ 'audio' ] })
+          .then(onLocalTracks);
+      };
 
-function disconnect() {
-    connection.removeEventListener(
-        JitsiMeetJS.events.connection.CONNECTION_ESTABLISHED,
-        onConnectionSuccess);
-    connection.removeEventListener(
-        JitsiMeetJS.events.connection.CONNECTION_FAILED,
-        onConnectionFailed);
-    connection.removeEventListener(
-        JitsiMeetJS.events.connection.CONNECTION_DISCONNECTED,
-        disconnect);
-}
+      function disconnect() {
+        connection.removeEventListener(
+          JitsiMeetJS.events.connection.CONNECTION_ESTABLISHED,
+          onConnectionSuccess);
+        connection.removeEventListener(
+          JitsiMeetJS.events.connection.CONNECTION_FAILED,
+          onConnectionFailed);
+        connection.removeEventListener(
+          JitsiMeetJS.events.connection.CONNECTION_DISCONNECTED,
+          disconnect);
+      }
 
-const options = {
-    hosts: {
-        domain: 'jitsi.jothon.online',
-        muc: 'conference.jitsi.jothon.online',
-        focus: "focus.jitsi.jothon.online",
-    },
-    bosh: 'wss://jitsi.jothon.online/xmpp-websocket',
-    websocket: 'wss://jitsi.jothon.online/xmpp-websocket',
+      const options = {
+        hosts: {
+          domain: 'jitsi.jothon.online',
+          muc: 'conference.jitsi.jothon.online',
+          focus: "focus.jitsi.jothon.online",
+        },
+        bosh: 'wss://jitsi.jothon.online/xmpp-websocket',
+        websocket: 'wss://jitsi.jothon.online/xmpp-websocket',
 
-   // The name of client node advertised in XEP-0115 'c' stanza
-   clientNode: 'http://jitsi.org/jitsimeet'
-};
+        // The name of client node advertised in XEP-0115 'c' stanza
+        clientNode: 'http://jitsi.org/jitsimeet'
+      };
 
-var confOptions = {
-    openBridgeChannel: true,
-    confID: '',
-};
-var room_id = '';
+      var confOptions = {
+        openBridgeChannel: true,
+        confID: '',
+      };
+      var room_id = '';
 
-JitsiMeetJS.setLogLevel(JitsiMeetJS.logLevels.ERROR);
-const initOptions = {
-    disableAudioLevels: false,
+      JitsiMeetJS.setLogLevel(JitsiMeetJS.logLevels.ERROR);
+      const initOptions = {
+        disableAudioLevels: false,
 
-    // The ID of the jidesha extension for Chrome.
-    desktopSharingChromeExtId: 'mbocklcggfhnbahlnepmldehdhpjfcjp',
+        // The ID of the jidesha extension for Chrome.
+        desktopSharingChromeExtId: 'mbocklcggfhnbahlnepmldehdhpjfcjp',
 
-    // Whether desktop sharing should be disabled on Chrome.
-    desktopSharingChromeDisabled: false,
+        // Whether desktop sharing should be disabled on Chrome.
+        desktopSharingChromeDisabled: false,
 
-    // The media sources to use when using screen sharing with the Chrome
-    // extension.
-    desktopSharingChromeSources: [ 'screen', 'window' ],
+        // The media sources to use when using screen sharing with the Chrome
+        // extension.
+        desktopSharingChromeSources: [ 'screen', 'window' ],
 
-    // Required version of Chrome extension
-    desktopSharingChromeMinExtVersion: '0.1',
+        // Required version of Chrome extension
+        desktopSharingChromeMinExtVersion: '0.1',
 
-    // Whether desktop sharing should be disabled on Firefox.
-    desktopSharingFirefoxDisabled: true,
-};
+        // Whether desktop sharing should be disabled on Firefox.
+        desktopSharingFirefoxDisabled: true,
+      };
 
-$('#button-pos').click(function(e){
-    e.preventDefault();
-    $(this).text('Click the map');
-    Game.mouse_click = 'add-object-point';
-});
+      $('#button-pos').click(function(e){
+        e.preventDefault();
+        $(this).text('Click the map');
+        Game.mouse_click = 'add-object-point';
+      });
 
-$('#object-list').on('click', '.button-edit-object', function(e){
-    e.preventDefault();
-    $('#add-object').hide();
-    $('#object-list').hide();
-    $('#form-add-object').show();
+      $('#object-list').on('click', '.button-edit-object', function(e){
+        e.preventDefault();
+        $('#add-object').hide();
+        $('#object-list').hide();
+        $('#form-add-object').show();
 
-    var id = $(this).parents('#object-list li').data('id');
+        var id = $(this).parents('#object-list li').data('id');
 
-    $('#add-object-step-1 [name="type"]').val(Game.objects[id].type);
-    $('#add-object-step-2').show();
-    x = Game.objects[id].x;
-    y = Game.objects[id].y;
-    $('#add-object-step-2 [name="x"]').val(x);
-    $('#add-object-step-2 [name="y"]').val(y);
-    $('#add-object-pos').text(x + ' ' + y);
-    $('#button-pos').text('Click me and click the map');
-    add_object_step3_enable(id);
-});
+        $('#add-object-step-1 [name="type"]').val(Game.objects[id].type);
+        $('#add-object-step-2').show();
+        x = Game.objects[id].x;
+        y = Game.objects[id].y;
+        $('#add-object-step-2 [name="x"]').val(x);
+        $('#add-object-step-2 [name="y"]').val(y);
+        $('#add-object-pos').text(x + ' ' + y);
+        $('#button-pos').text('Click me and click the map');
+        add_object_step3_enable(id);
+      });
 
-$('#object-list').on('click', '.button-delete-object', function(e){
-    e.preventDefault();
-    var id = $(this).parents('#object-list li').data('id');
-    $.ajax({
-        type: 'post',
-        url: api_url + 'rpg/deleteobject?room=' + encodeURIComponent(room_id) + '&room_object_id=' + encodeURIComponent(id),
-        success: function(ret){
+      $('#object-list').on('click', '.button-delete-object', function(e){
+        e.preventDefault();
+        var id = $(this).parents('#object-list li').data('id');
+        $.ajax({
+          type: 'post',
+          url: api_url + 'rpg/deleteobject?room=' + encodeURIComponent(room_id) + '&room_object_id=' + encodeURIComponent(id),
+          success: function(ret){
             console.log(ret);
             loadRoomData(room_id)
-        },
-        error: function(XMLHttpRequest, textStatus, errorThrown){
-        },
-    });
-});
-$('#add-object-step-3').on('change', ':input', function(){
-    var target = $('#form-add-object').data('target');
-    Game.objects[target].data[$(this).attr('name')] = $(this).val();
-});
+          },
+          error: function(XMLHttpRequest, textStatus, errorThrown){
+          },
+        });
+      });
+      $('#add-object-step-3').on('change', ':input', function(){
+        var target = $('#form-add-object').data('target');
+        Game.objects[target].data[$(this).attr('name')] = $(this).val();
+      });
 
-$('#form-add-object').submit(function(e){
-    e.preventDefault();
-    if (!room) {
-        alert('Need login');
-        return;
-    }
-    var target = $('#form-add-object').data('target');
-    if (target == 'preview') {
-        $.ajax({
+      $('#form-add-object').submit(function(e){
+        e.preventDefault();
+        if (!room) {
+          alert('Need login');
+          return;
+        }
+        var target = $('#form-add-object').data('target');
+        if (target == 'preview') {
+          $.ajax({
             type: 'post',
             url: api_url + 'rpg/addobject?room=' + encodeURIComponent(room_id),
             data: {data: JSON.stringify(Game.objects.preview)},
             success: function(ret){
-                loadRoomData(room_id);
-                $('#add-object').show();
-                $('#object-list').show();
-                $('#form-add-object').hide();
+              loadRoomData(room_id);
+              $('#add-object').show();
+              $('#object-list').show();
+              $('#form-add-object').hide();
             },
             error: function(XMLHttpRequest, textStatus, errorThrown){
-                alert('add object failed');
+              alert('add object failed');
             },
-        });
-    } else {
-        $.ajax({
+          });
+        } else {
+          $.ajax({
             type: 'post',
             url: api_url + 'rpg/updateobject?room=' + encodeURIComponent(room_id) + '&room_object_id=' + encodeURIComponent(target),
             data: {data: JSON.stringify(Game.objects[target])},
             success: function(ret){
-                loadRoomData(room_id);
-                Game.objects.preview = null;
-                $('#add-object').show();
-                $('#object-list').show();
-                $('#form-add-object').hide();
+              loadRoomData(room_id);
+              Game.objects.preview = null;
+              $('#add-object').show();
+              $('#object-list').show();
+              $('#form-add-object').hide();
             },
             error: function(XMLHttpRequest, textStatus, errorThrown){
-                alert('add object failed');
+              alert('add object failed');
             },
-        });
-    }
-});
+          });
+        }
+      });
 
-$('#add-object').click(function(e){
-    e.preventDefault();
-    $('#add-object').hide();
-    $('#add-object-step-1').show();
-    $('#add-object-step-1 [name="type"]').val(0);
-    $('#object-list').hide();
-    $('#add-object-step-2').hide();
-    $('#add-object-step-3').hide();
-    $('#form-add-object').show();
-});
+      $('#add-object').click(function(e){
+        e.preventDefault();
+        $('#add-object').hide();
+        $('#add-object-step-1').show();
+        $('#add-object-step-1 [name="type"]').val(0);
+        $('#object-list').hide();
+        $('#add-object-step-2').hide();
+        $('#add-object-step-3').hide();
+        $('#form-add-object').show();
+      });
 
-$('#form-add-object [name="type"]').change(function(e){
-    $('#add-object-step-3').hide();
-    $('#add-object-step-2').show();
-    Game.mouse_click = 'add-object-point';
-});
+      $('#form-add-object [name="type"]').change(function(e){
+        $('#add-object-step-3').hide();
+        $('#add-object-step-2').show();
+        Game.mouse_click = 'add-object-point';
+      });
 
-$('#form-add-object').on('click', '.button-cancel', function(e){
-    e.preventDefault();
-    delete(Game.objects.preview);
-    $('#form-add-object').hide();
-    $('#add-object').show();
-    $('#object-list').show();
-});
+      $('#form-add-object').on('click', '.button-cancel', function(e){
+        e.preventDefault();
+        delete(Game.objects.preview);
+        $('#form-add-object').hide();
+        $('#add-object').show();
+        $('#object-list').show();
+      });
 
-var add_object_step3_enable = function(id){
-    var type = $('#form-add-object [name="type"]').val();
-    $('#add-object-step-3').html($('#tmpl-object-param-' + type).html());
-    if (type == 'npc') {
-        characters.map(function(c) {
+      var add_object_step3_enable = function(id){
+        var type = $('#form-add-object [name="type"]').val();
+        $('#add-object-step-3').html($('#tmpl-object-param-' + type).html());
+        if (type == 'npc') {
+          characters.map(function(c) {
             $('#add-object-step-3 [name="character"]').append($('<option></option>').text(c));
-        });
-    }
-    $('#add-object-step-3').show();
-    if (id == 'preview') {
-        Game.objects.preview = {
+          });
+        }
+        $('#add-object-step-3').show();
+        if (id == 'preview') {
+          Game.objects.preview = {
             type: type,
             x: parseInt($('#form-add-object [name="x"]').val()),
             y: parseInt($('#form-add-object [name="y"]').val()),
             data: {},
-        };
-        if (type == 'image' || type == 'iframe') {
+          };
+          if (type == 'image' || type == 'iframe') {
             Game.objects.preview.x2 = parseInt($('#form-add-object [name="x2"]').val());
             Game.objects.preview.y2 = parseInt($('#form-add-object [name="y2"]').val());
-        }
-        $('#add-object-step-3 :input').each(function(){
+          }
+          $('#add-object-step-3 :input').each(function(){
             Game.objects.preview.data[$(this).attr('name')] = $(this).val();
-        });
-        $('#add-object-step-3 [type="submit"]').text('Add Object');
-    } else {
-        for (var k in Game.objects[id].data) {
+          });
+          $('#add-object-step-3 [type="submit"]').text('Add Object');
+        } else {
+          for (var k in Game.objects[id].data) {
             $('#add-object-step-3 [name="' + k + '"]:input').val(Game.objects[id].data[k]);
+          }
+          $('#add-object-step-3 [type="submit"]').text('Edit Object');
         }
-        $('#add-object-step-3 [type="submit"]').text('Edit Object');
-    }
-    $('#form-add-object').data('target', id);
-};
+        $('#form-add-object').data('target', id);
+      };
 
-$('#room-form').submit(function(e) {
-  e.preventDefault();
-  room_id = $('#room-form [name="room-name"]').val();
-  loadRoomData(room_id);
-  $('#room-form').hide();
-  $('#joined-form').show();
+      $('#room-form').submit(function(e) {
+        e.preventDefault();
+        room_id = $('#room-form [name="room-name"]').val();
+        loadRoomData(room_id);
+        $('#room-form').hide();
+        $('#joined-form').show();
 
-  if ('ontouchstart' in window && 'requestFullscreen' in document.body) {
-      document.body.requestFullscreen();
-  }
+        if ('ontouchstart' in window && 'requestFullscreen' in document.body) {
+          document.body.requestFullscreen();
+        }
 
-  Game.onload(function() {
-    var d = new Promise(function(resolve, reject) {
-      JitsiMeetJS.init(initOptions);
-      confOptions.confID = 'jitsi.jothon.online/' + room_id;
-      connection = new JitsiMeetJS.JitsiConnection(null, null, options);
+        Game.onload(function() {
+          var d = new Promise(function(resolve, reject) {
+            JitsiMeetJS.init(initOptions);
+            confOptions.confID = 'jitsi.jothon.online/' + room_id;
+            connection = new JitsiMeetJS.JitsiConnection(null, null, options);
 
-      connection.addEventListener(
-        JitsiMeetJS.events.connection.CONNECTION_ESTABLISHED,
-        onConnectionSuccess);
-      connection.addEventListener(
-        JitsiMeetJS.events.connection.CONNECTION_FAILED,
-        onConnectionFailed);
-      connection.addEventListener(
-        JitsiMeetJS.events.connection.CONNECTION_DISCONNECTED,
-        disconnect);
+            connection.addEventListener(
+              JitsiMeetJS.events.connection.CONNECTION_ESTABLISHED,
+              onConnectionSuccess);
+            connection.addEventListener(
+              JitsiMeetJS.events.connection.CONNECTION_FAILED,
+              onConnectionFailed);
+            connection.addEventListener(
+              JitsiMeetJS.events.connection.CONNECTION_DISCONNECTED,
+              disconnect);
 
-      connection.connect();
-      resolve();
-    });
-    return d;
-  });
-});
+            connection.connect();
+            resolve();
+          });
+          return d;
+        });
+      });
 
-$(window).bind('beforeunload', unload);
-$(window).bind('unload', unload);
-function unload() {
-    if (room) {
-        room.leave();
-    }
-    if (connection) {
-        connection.disconnect();
-    }
-}
+      $(window).bind('beforeunload', unload);
+      $(window).bind('unload', unload);
+      function unload() {
+        if (room) {
+          room.leave();
+        }
+        if (connection) {
+          connection.disconnect();
+        }
+      }
 
-var iframe_click = function(e){
-	e.preventDefault();
-    if ($(this).is('.max')) {
-        $('iframe', this.parentNode).css({
+      var iframe_click = function(e){
+        e.preventDefault();
+        if ($(this).is('.max')) {
+          $('iframe', this.parentNode).css({
             position: 'relative',
             left: '0px',
             top: '0px',
             width: '100%',
             height: '100%',
             'z-index': 10,
-        });
-        $(this).css({
+          });
+          $(this).css({
             position: 'absolute',
             left: '0px',
             top: '0px',
             width: '100%',
             height: '100%',
             'z-index': 15,
-        });
-        $(this).removeClass('max');
-    } else {
-        $('iframe', this.parentNode).css({
+          });
+          $(this).removeClass('max');
+        } else {
+          $('iframe', this.parentNode).css({
             position: 'fixed',
             left: '50px',
             top: '50px',
             width: $('body').width() - 100,
             height: window.innerHeight - 100,
             'z-index': 30,
-        });
-        $(this).css({
+          });
+          $(this).css({
             position: 'fixed',
             left: '0px',
             top: '0px',
             width: $('body').width(),
             height: window.innerHeight,
             'z-index': 21,
+          });
+          $(this).addClass('max');
+        }
+      };
+      $('body').on('click', '.iframe-div-area', function(e){ iframe_click.bind(this)(e); });
+      $('body').on('touchstart', '.iframe-div-area', function(e){ iframe_click.bind(this)(e); });
+
+      window_change = function(){
+        var width = $('#game').width();
+        var height = $('#game').height();
+        $('#game').attr('width', width).attr('height', height);
+        Game.camera.width = width;
+        Game.camera.height = height;
+        Game.camera.maxX = map.cols * map.tsize - width;
+        Game.camera.maxY = map.rows * map.tsize - height;
+      };
+      $(window).resize(window_change);
+      $(window).on('orientationchange', window_change);
+
+      if ('ontouchstart' in window) {
+        $('#arrow-controller').show();
+        $('#arrow-controller img').on('touchstart', function(event){
+          event.preventDefault();
+          var e = event.originalEvent.touches[0];
+          var offsetX = e.clientX - $(this).offset().left;
+          var offsetY = e.clientY - $(this).offset().top;
+          var width = $(this).width();
+          var height = $(this).height();
+          if (offsetY < height / 2) {
+            if (offsetX > width / 3 && offsetX < 2 * width / 3) {
+              Keyboard._keys[Keyboard.UP] = true;
+            }
+          } else {
+            if (offsetX <= width / 3) {
+              Keyboard._keys[Keyboard.LEFT] = true;
+            } else if (offsetX <= 2 * width / 3) {
+              Keyboard._keys[Keyboard.DOWN] = true;
+            } else {
+              Keyboard._keys[Keyboard.RIGHT] = true;
+            }
+          }
+        }).on('touchend', function(e){
+          Keyboard._keys[Keyboard.UP] = Keyboard._keys[Keyboard.DOWN] = Keyboard._keys[Keyboard.LEFT] = Keyboard._keys[Keyboard.RIGHT] =  false;
         });
-        $(this).addClass('max');
-    }
-};
-$('body').on('click', '.iframe-div-area', function(e){ iframe_click.bind(this)(e); });
-$('body').on('touchstart', '.iframe-div-area', function(e){ iframe_click.bind(this)(e); });
+      }
 
-window_change = function(){
-    var width = $('#game').width();
-    var height = $('#game').height();
-    $('#game').attr('width', width).attr('height', height);
-    Game.camera.width = width;
-    Game.camera.height = height;
-    Game.camera.maxX = map.cols * map.tsize - width;
-    Game.camera.maxY = map.rows * map.tsize - height;
-};
-$(window).resize(window_change);
-$(window).on('orientationchange', window_change);
-
-if ('ontouchstart' in window) {
-	$('#arrow-controller').show();
-	$('#arrow-controller img').on('touchstart', function(event){ 
-		event.preventDefault();
-		var e = event.originalEvent.touches[0];
-		var offsetX = e.clientX - $(this).offset().left;
-		var offsetY = e.clientY - $(this).offset().top;
-		var width = $(this).width();
-		var height = $(this).height();
-		if (offsetY < height / 2) {
-			if (offsetX > width / 3 && offsetX < 2 * width / 3) {
-				Keyboard._keys[Keyboard.UP] = true;
-			}
-		} else {
-			if (offsetX <= width / 3) {
-				Keyboard._keys[Keyboard.LEFT] = true;
-			} else if (offsetX <= 2 * width / 3) {
-				Keyboard._keys[Keyboard.DOWN] = true;
-			} else {
-				Keyboard._keys[Keyboard.RIGHT] = true;
-			}
-		}
-	}).on('touchend', function(e){ 
-		Keyboard._keys[Keyboard.UP] = Keyboard._keys[Keyboard.DOWN] = Keyboard._keys[Keyboard.LEFT] = Keyboard._keys[Keyboard.RIGHT] =  false;
-	});
-}
-
-</script>
-</body>
+    </script>
+  </body>
 </html>
 
