@@ -449,9 +449,44 @@ Game.getDrawingHeroes = function(){
         hero.audioLevel = 0;
         hero.name = object.data.name;
         hero.messages = [];
-        if (object.data.say_type == 3) {
+        hero.say_type = object.data.say_type
+        switch(hero.say_type){
+          case '2':
+            {
+              var w = hero.x - Game.heroes.me.x;
+              var h = hero.y - Game.heroes.me.y;
+              if (w * w + h * h < 64 * 64) {
+                hero.messages = object.data.say.split("\n").map(function(e){ return [e]; });
+              }
+            }
+            break;
+          case '3':
             hero.messages = object.data.say.split("\n").map(function(e){ return [e]; });
+            break;
+          case '4':
+            hero.messages = object.data.say.split("\n").map(function(e){ return [e]; });
+            break;
+          case '5':
+            var w = hero.x - Game.heroes.me.x;
+            var h = hero.y - Game.heroes.me.y;
+            if (w * w + h * h < 64 * 64) {
+              hero.messages = object.data.say.split("\n").map(function(e){ return [e]; });
+            }
+            break;
         }
+
+        hero.messages = hero.messages.map(function(message){
+            if (message[0].match(/\$people/)) {
+                if (room) {
+                    c = room.getParticipantCount();
+                } else {
+                    c = 1;
+                }
+                message[0] = message[0].replace(/\$people/, c);
+            }
+            return message;
+        });
+
         character = object.data.character;
 		if ('undefined' === typeof(hero.image)) {
             var image = Loader.getImage('hero:' + character);
@@ -521,12 +556,24 @@ Game.getDrawingHeroes = function(){
                      metric = ctx.measureText(hero.name + ':');
                      width = Math.max(width, metric.width);
                      height += metric.actualBoundingBoxAscent + metric.actualBoundingBoxDescent + 2;
-
-                     for (var message of hero.messages) {
-                         metric = ctx.measureText(message[0]);
-                         width = Math.max(width, metric.width);
-                         height += metric.actualBoundingBoxAscent + metric.actualBoundingBoxDescent + 2;
-                     }
+                    var message_idx = -1;
+                    var duration = 4 + (hero.messages.length % 2);
+                    switch(hero.say_type){
+                        case '4':
+                        case '5':
+                            message_idx = parseInt(((new Date()).getTime()/(1000*duration)))%hero.messages.length
+                            metric = ctx.measureText(hero.messages[message_idx][0]);
+                            width = Math.max(width, metric.width);
+                            height += metric.actualBoundingBoxAscent + metric.actualBoundingBoxDescent + 2;
+                            break;
+                        default:
+                            for (var message of hero.messages) {
+                                metric = ctx.measureText(message[0]);
+                                width = Math.max(width, metric.width);
+                                height += metric.actualBoundingBoxAscent + metric.actualBoundingBoxDescent + 2;
+                            }
+                    }
+                     
 
                      ctx.beginPath();
                      ctx.fillStyle = 'white';
@@ -571,14 +618,28 @@ Game.getDrawingHeroes = function(){
                              hero.screenX - width / 2,
                              hero.screenY - 20 - height - 4
                              );
-                     for (var message of hero.messages) {
-                         metric = ctx.measureText(message[0]);
-                         height -= (metric.actualBoundingBoxAscent + metric.actualBoundingBoxDescent + 2);
-                         ctx.fillText(message[0],
-                                 hero.screenX - width / 2,
-                                 hero.screenY - 20 - height - 4
-                         );
-                     }
+                    switch (hero.say_type){
+                        case '4':
+                        case '5':
+                            let m = hero.messages[message_idx] 
+                            metric = ctx.measureText(m[0]);
+                            height -= (metric.actualBoundingBoxAscent + metric.actualBoundingBoxDescent + 2);
+                            ctx.fillText(m[0],
+                                    hero.screenX - width / 2,
+                                    hero.screenY - 20 - height - 4
+                            );
+                            break;
+                        default:
+                            for (var message of hero.messages) {
+                                metric = ctx.measureText(message[0]);
+                                height -= (metric.actualBoundingBoxAscent + metric.actualBoundingBoxDescent + 2);
+                                ctx.fillText(message[0],
+                                        hero.screenX - width / 2,
+                                        hero.screenY - 20 - height - 4
+                                );
+                            }                        
+                    }
+                     
                  }
 
                  // video
