@@ -42,6 +42,10 @@ class Hero {
     }
   }
 
+  getMessages(me, now) {
+    return this.messages;
+  }
+
   changeCharacter(character) {
     this.character = character;
     this.loadImage();
@@ -124,4 +128,3 @@ class Hero {
     }
   }
 }
-

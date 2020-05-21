@@ -248,7 +248,7 @@ Game.getDrawingObjects = function() {
         tileX = TILE_MAP[tile][0];
         tileY = TILE_MAP[tile][1];
         objects.push([
-          r * 32,
+          r * map.tsize,
           'drawImage',
           [
             this.tileAtlas, // image
@@ -550,6 +550,18 @@ Game.getDrawingWalls = function() {
   return objects;
 };
 
+Game.formatMessage = function(message) {
+  if (message.match(/\$people/)) {
+    if (room) {
+      c = room.getParticipantCount();
+    } else {
+      c = 1;
+    }
+    return message.replace(/\$people/, c);
+  }
+  return message;
+}
+
 Game.getDrawingHeroes = function() {
   const objects = [];
   // heroes includes NPC and users.
@@ -561,49 +573,10 @@ Game.getDrawingHeroes = function() {
   for (const id in Game.objects) {
     const object = Game.objects[id];
     if (object.type != 'npc') continue;
-    const hero = {width: map.tsize, height: map.tsize};
-    hero.x = object.x;
-    hero.y = object.y;
-    hero.col = 0;
-    hero.row = parseInt(object.data.row);
-    hero.audioLevel = 0;
-    hero.name = object.data.name;
-    hero.messages = [];
-    hero.say_type = object.data.say_type;
-    switch (hero.say_type) {
-      case '2':
-      case '5':
-        {
-          const w = hero.x - Game.heroes.me.x;
-          const h = hero.y - Game.heroes.me.y;
-          if (w * w + h * h < 64 * 64) {
-            hero.messages = object.data.say.split('\n').map(function(e) {
-              return [e];
-            });
-          }
-        }
-        break;
-      case '3':
-      case '4':
-        hero.messages = object.data.say.split('\n').map(function(e) {
-          return [e];
-        });
-    }
+    const hero = new NPC(object);
 
-    hero.messages = hero.messages.map(function(message) {
-      if (message[0].match(/\$people/)) {
-        if (room) {
-          c = room.getParticipantCount();
-        } else {
-          c = 1;
-        }
-        message[0] = message[0].replace(/\$people/, c);
-      }
-      return message;
-    });
-
-    character = object.data.character;
     if ('undefined' === typeof(hero.image)) {
+      const character = hero.character;
       const image = Loader.getImage('hero:' + character);
       if (!image) {
         Loader.loadImage(`hero:${character}`, `sprite/${character}.png`).then();
@@ -620,6 +593,7 @@ Game.getDrawingHeroes = function() {
     }
     hero.screenX = hero.x - Game.camera.x;
     hero.screenY = hero.y - Game.camera.y;
+    // Why???
     col = Math.floor(hero.col / 50) % 3;
     objects.push([
       hero.y,
@@ -629,7 +603,7 @@ Game.getDrawingHeroes = function() {
         col * map.tsize, hero.row * map.tsize, map.tsize, map.tsize,
         hero.screenX - hero.width / 2,
         hero.screenY - hero.height / 2,
-        32, 32,
+        map.tsize, map.tsize,
       ],
     ]);
 
@@ -665,34 +639,22 @@ Game.getDrawingHeroes = function() {
             hero.screenY + 28,
         );
 
-        // message
-        if (hero.messages.length) {
+        const messages = hero.getMessages(
+            Game.heroes.me, (new Date()).getTime()).map(
+                (m) => [Game.formatMessage(m[0])]);
+
+        if (messages.length) {
           let width = 0;
           let height = 0;
           metric = ctx.measureText(hero.name + ':');
           width = Math.max(width, metric.width);
           height += metric.actualBoundingBoxAscent +
               metric.actualBoundingBoxDescent + 2;
-          let messageIdx = -1;
-          const duration = 4 + (hero.messages.length % 2);
-          const now = (new Date()).getTime();
-          switch (hero.say_type) {
-            case '4':
-            case '5':
-              messageIdx = Math.floor(now / (1000 * duration)) %
-                  hero.messages.length;
-              metric = ctx.measureText(hero.messages[messageIdx][0]);
-              width = Math.max(width, metric.width);
-              height += metric.actualBoundingBoxAscent +
-                  metric.actualBoundingBoxDescent + 2;
-              break;
-            default:
-              for (const message of hero.messages) {
-                metric = ctx.measureText(message[0]);
-                width = Math.max(width, metric.width);
-                height += metric.actualBoundingBoxAscent +
-                    metric.actualBoundingBoxDescent + 2;
-              }
+          for (const message of messages) {
+            metric = ctx.measureText(message[0]);
+            width = Math.max(width, metric.width);
+            height += metric.actualBoundingBoxAscent +
+                metric.actualBoundingBoxDescent + 2;
           }
 
           ctx.beginPath();
@@ -743,28 +705,14 @@ Game.getDrawingHeroes = function() {
               hero.screenX - width / 2,
               hero.screenY - 20 - height - 4,
           );
-          switch (hero.say_type) {
-            case '4':
-            case '5':
-              const m = hero.messages[messageIdx];
-              metric = ctx.measureText(m[0]);
-              height -= (metric.actualBoundingBoxAscent +
-                  metric.actualBoundingBoxDescent + 2);
-              ctx.fillText(m[0],
-                  hero.screenX - width / 2,
-                  hero.screenY - 20 - height - 4,
-              );
-              break;
-            default:
-              for (const message of hero.messages) {
-                metric = ctx.measureText(message[0]);
-                height -= (metric.actualBoundingBoxAscent +
-                    metric.actualBoundingBoxDescent + 2);
-                ctx.fillText(message[0],
-                    hero.screenX - width / 2,
-                    hero.screenY - 20 - height - 4,
-                );
-              }
+          for (const message of messages) {
+            metric = ctx.measureText(message[0]);
+            height -= (metric.actualBoundingBoxAscent +
+                metric.actualBoundingBoxDescent + 2);
+            ctx.fillText(message[0],
+                hero.screenX - width / 2,
+                hero.screenY - 20 - height - 4,
+            );
           }
         }
 
