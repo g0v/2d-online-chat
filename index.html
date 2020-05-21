@@ -426,6 +426,9 @@ body {
 
       $('body').keydown(function(e){
         if ('Enter' == e.key) {
+          if ($('#form-add-object').is(':visible')) {
+            return;
+          }
           if ($('#say').is(':visible') && !$('#say').is(':focus')) {
             $('#say').focus();
           }
