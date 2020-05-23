@@ -560,15 +560,18 @@ Game.formatMessage = function(message) {
     return message.replace(/\$people/, c);
   }
   return message;
-}
+};
 
 Game.getDrawingHeroes = function() {
   const objects = [];
   // heroes includes NPC and users.
   const heroes = [];
-  for (const id in this.heroes) {
-    const hero = this.heroes[id];
+  for (const id in gameCore.members) {
+    const hero = gameCore.members[id];
     heroes.push(hero);
+  }
+  if (!gameCore.members.hasOwnProperty('me')) {
+    heroes.push(gameCore.me);
   }
   for (const id in Game.objects) {
     const object = Game.objects[id];
@@ -640,8 +643,8 @@ Game.getDrawingHeroes = function() {
         );
 
         const messages = hero.getMessages(
-            Game.heroes.me, (new Date()).getTime()).map(
-                (m) => [Game.formatMessage(m[0])]);
+            gameCore.me, (new Date()).getTime()).map(
+            (m) => [Game.formatMessage(m[0])]);
 
         if (messages.length) {
           let width = 0;
@@ -733,3 +736,60 @@ Game.getDrawingHeroes = function() {
   return objects;
 };
 
+Game.enableCamera = function() {
+
+};
+
+Game.onLocalTracks = function(tracks) {
+  tracks.map((track) => {
+    if (track.getType() === 'video') {
+      gameCore.me.camera_track = track;
+      room.addTrack(track);
+      if (!gameCore.me.videoDom) {
+        gameCore.me.videoDom = $('<video autoplay="1"></video>')[0];
+        gameCore.me.video_track = track;
+        $('#video-pool').append(gameCore.me.videoDom);
+      }
+      $('#cam-switch').text('Camera: on');
+      track.attach(gameCore.me.videoDom);
+    } else {
+      gameCore.me.audio_track = track;
+      room.addTrack(track);
+      track.addEventListener(
+          JitsiMeetJS.events.track.TRACK_AUDIO_LEVEL_CHANGED,
+          function(audioLevel) {
+            if (!gameCore.me.audio_track.isMuted()) {
+              gameCore.me.audioLevel = audioLevel;
+            }
+          });
+    }
+  });
+};
+
+Game.onRemoteTrack = function(track) {
+  if (track.isLocal()) {
+    return;
+  }
+
+  // TODO(stimim): how to remove obsoleted tracks?
+  const participant = track.getParticipantId();
+  const hero = gameCore.members[participant];
+
+  if (!hero) {
+    console.log(`Participant ${participant} doesn't exist.`);
+  }
+
+  if (track.getType() == 'audio') {
+    // TODO(stimim): save audio DOM to hero.
+    $('#game').append(
+        `<audio id="audio-${participant}" autoplay="1" class="remote" />`);
+    track.attach($(`#audio-${participant}`)[0]);
+  } else if (track.getType() == 'video') {
+    if (!gameCore.members[participant].videoDom) {
+      hero.videoDom = $('<video autoplay="1"></video>')[0];
+      hero.video_track = track;
+      $('#video-pool').append(hero.videoDom);
+    }
+    track.attach(hero.videoDom);
+  }
+};

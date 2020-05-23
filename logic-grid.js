@@ -81,13 +81,12 @@ Game.init = function() {
   const width = $('#game').width();
   const height = $('#game').height();
   $('#game').attr('width', width).attr('height', height);
-  this.heroes = {};
   const character = $('#character').val();
   const name = $('#name').val();
-  this.heroes.me = new Hero(map, 160, 160, character, name);
-  this.heroes.me.textColor = 'orange';
+  gameCore.initCurrentUser(map, name, character);
+  gameCore.me.textColor = 'orange';
   this.camera = new Camera(map, width, height);
-  this.camera.follow(this.heroes.me);
+  this.camera.follow(gameCore.me);
 
   document.getElementById('game').onmouseup = function() {
     const x = map.getX(map.getCol(Game.mouse[0] + Game.camera.x));
@@ -115,8 +114,8 @@ Game.init = function() {
           'Click me and click the map').prop('disabled', false);
       add_object_step3_enable('preview');
     } else {
-      Game.heroes.me.x = x;
-      Game.heroes.me.y = y;
+      gameCore.me.x = x;
+      gameCore.me.y = y;
       if (room) {
         room.broadcastEndpointMessage({type: 'teleport', message: [x, y]});
       }
@@ -139,25 +138,25 @@ Game.update = function(delta) {
   } else if (Keyboard.isDown(Keyboard.DOWN)) {
     dirY = 1; row = 0;
   } else {
-    row = this.heroes.me.row;
+    row = gameCore.me.row;
   }
 
-  this.heroes.me.move(delta, dirX, dirY);
+  gameCore.me.move(delta, dirX, dirY);
   const now = (new Date).getTime();
-  for (const id in this.heroes) {
-    if (!(this.heroes[id] instanceof Hero)) {
+  for (const id in gameCore.members) {
+    if (!(gameCore.members[id] instanceof Hero)) {
       continue;
     }
-    this.heroes[id].messages = this.heroes[id].messages.filter(
+    gameCore.members[id].messages = gameCore.members[id].messages.filter(
         function(message) {
           return message[1] > now;
         });
     if (id == 'me') {
       continue;
     }
-    this.heroes[id].otherMove(delta);
+    gameCore.members[id].otherMove(delta);
   }
-  this.heroes.me.row = row;
+  gameCore.me.row = row;
   this.camera.update();
 
   if (room) {
@@ -171,13 +170,13 @@ Game.update = function(delta) {
 
     const now = (new Date).getTime();
     if (prevUpdateTime === null || now - prevUpdateTime > wait) {
-      if (this.heroes.me.y_sent != this.heroes.me.y) {
-        this.heroes.me.y_sent = this.heroes.me.y;
-        room.setLocalParticipantProperty('top', parseInt(this.heroes.me.y));
+      if (gameCore.me.y_sent != gameCore.me.y) {
+        gameCore.me.y_sent = gameCore.me.y;
+        room.setLocalParticipantProperty('top', parseInt(gameCore.me.y));
       }
-      if (this.heroes.me.x_sent != this.heroes.me.x) {
-        this.heroes.me.x_sent = this.heroes.me.x;
-        room.setLocalParticipantProperty('left', parseInt(this.heroes.me.x));
+      if (gameCore.me.x_sent != gameCore.me.x) {
+        gameCore.me.x_sent = gameCore.me.x;
+        room.setLocalParticipantProperty('left', parseInt(gameCore.me.x));
       }
       prevUpdateTime = now;
     }

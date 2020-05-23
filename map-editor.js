@@ -38,11 +38,13 @@ Game.init = function() {
     Keyboard.SPACE]);
   this.tileAtlas = Loader.getImage('tiles');
 
-  this.heroes = {};
-  this.heroes.me = new Hero(
-      map, 160, 160, 'teachers/Headmaster fmale', 'cursor');
+  const name = 'cursor';
+  const character = 'teachers/Headmaster fmale';
+
+  gameCore.initCurrentUser(map, name, character);
+
   this.camera = new Camera(map, 512, 512);
-  this.camera.follow(this.heroes.me);
+  this.camera.follow(gameCore.me);
 };
 
 Game.spaceClick = function() {
@@ -79,21 +81,21 @@ Game.update = function(delta) {
   } else if (Keyboard.isDown(Keyboard.DOWN)) {
     diry = 1; row = 0;
   } else {
-    row = this.heroes.me.row;
+    row = gameCore.me.row;
     Game.isWayClick = false;
   }
 
   if ($('[name="layer"]:checked').val() == 'result') {
-    this.heroes.me.move(delta, dirx, diry);
-    this.heroes.me.row = row;
+    gameCore.me.move(delta, dirx, diry);
+    gameCore.me.row = row;
   } else {
     if ((dirx || diry) && !Game.isWayClick) {
       Game.isWayClick = true;
-      this.heroes.me.x += map.tsize * dirx;
-      this.heroes.me.x = map.getX(map.getCol(this.heroes.me.x)) + map.tsize / 2;
-      this.heroes.me.y += map.tsize * diry;
-      this.heroes.me.y = map.getY(map.getRow(this.heroes.me.y)) + map.tsize / 2;
-      this.heroes.me.move(delta, 0, 0);
+      gameCore.me.x += map.tsize * dirx;
+      gameCore.me.x = map.getX(map.getCol(gameCore.me.x)) + map.tsize / 2;
+      gameCore.me.y += map.tsize * diry;
+      gameCore.me.y = map.getY(map.getRow(gameCore.me.y)) + map.tsize / 2;
+      gameCore.me.move(delta, 0, 0);
     }
   }
 

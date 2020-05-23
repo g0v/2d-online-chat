@@ -1,3 +1,5 @@
+// We probably want to move "map" and moving function to another place.
+// These functions is only used in 2d version.
 class Hero {
   constructor(map, x, y, character, name) {
     this.map = map;
@@ -29,15 +31,16 @@ class Hero {
   }
 
   loadImage() {
+    if (!this.character) return;
     const char = this.character;
     const img = Loader.getImage('hero:' + char);
     if (null !== img) {
       this.image = img;
     } else {
       Loader.loadImage(`hero:${char}`, `sprite/${char}.png`).then(
-        () => {
-          this.image = Loader.getImage('hero:' + char);
-        },
+          () => {
+            this.image = Loader.getImage('hero:' + char);
+          },
       );
     }
   }
@@ -77,11 +80,11 @@ class Hero {
       const dirX = (this.target_x > this.x) ? 1 : -1;
       row = (this.target_x > this.x) ? 2 : 1;
       deltaX = Math.min(
-        this.SPEED * delta, Math.abs(this.target_x - this.x)) * dirX;
+          this.SPEED * delta, Math.abs(this.target_x - this.x)) * dirX;
     } else if (this.target_y != this.y) {
       const dirY = (this.target_y > this.y) ? 1 : -1;
       deltaY = Math.min(
-        this.SPEED * delta, Math.abs(this.target_y - this.y)) * dirY;
+          this.SPEED * delta, Math.abs(this.target_y - this.y)) * dirY;
       row = (this.target_y > this.y) ? 0 : 3;
     }
     // move hero

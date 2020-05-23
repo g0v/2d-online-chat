@@ -9,6 +9,8 @@
     <script src="hero.js?"></script>
     <script src="logic-grid.js?"></script>
     <script src="game_object.js?"></script>
+    <script src="jitsi-channel.js?"></script>
+    <script src="game-core.js?"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.6/css/bootstrap.css">
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
     <style>
@@ -206,8 +208,12 @@ body {
     </div>
     <div id="video-pool" style="display:none"></div>
     <script>
+      let wrappedConnection = new JitsiConnection();
       let connection = null;
       let room = null;
+      let gameCore = new GameCore(wrappedConnection);
+
+      let room_id = '';
 
       if (localStorage.getItem('name')) {
         $('#name').val(localStorage.getItem('name'));
@@ -365,38 +371,38 @@ body {
       $('#character option').eq(Math.floor(Math.random() * characters.length)).prop('selected', true);
 
       $('#character').change(function(e){
-        if ('undefined' !== typeof(Game.heroes)) {
-          Game.heroes.me.changeCharacter($(this).val());
+        if (gameCore.me) {
+          gameCore.me.changeCharacter($(this).val());
         }
         $('#character').blur();
 
-        if (room) {
-          room.setLocalParticipantProperty('character', $(this).val());
+        if (wrappedConnection) {
+          wrappedConnection.setLocalParticipantProperty(
+              {'character': $(this).val()});
         }
       }).change();
 
       $('#name').keyup(function(e){
-        localStorage.setItem('name', $('#name').val());
-        Game.heroes.me.name = $(this).val();
-        if (room) {
-          room.setDisplayName($('#name').val());
-        }
+        const newName = $(this).val();
+        localStorage.setItem('name', newName);
+        gameCore.me.name = newName;
+        wrappedConnection.setDisplayName(newName);
       });
 
       $('#cam-switch').click(function(e){
         e.preventDefault();
-        if (!Game.heroes.me.camera_track) {
+        if (!gameCore.me.camera_track) {
           JitsiMeetJS.createLocalTracks({ devices: [ 'video' ] })
             .then(onLocalTracks)
             .catch(error => {
               alert('權限錯誤 Permission Error: 無法得到攝影機權限 Error obtaining camera permission. ' + error);
             });
         } else {
-          Game.heroes.me.camera_track.mute().then(function(){
-            Game.heroes.me.camera_track.dispose();
-            Game.heroes.me.camera_track.detach(Game.heroes.me.videoDom);
-            delete(Game.heroes.me.videoDom);
-            delete(Game.heroes.me.camera_track);
+          gameCore.me.camera_track.mute().then(function(){
+            gameCore.me.camera_track.dispose();
+            gameCore.me.camera_track.detach(gameCore.me.videoDom);
+            delete(gameCore.me.videoDom);
+            delete(gameCore.me.camera_track);
             $('#cam-switch').text('Camera: off');
           });
         }
@@ -405,11 +411,11 @@ body {
 
       $('#mic-switch').click(function(e){
         e.preventDefault();
-        if (Game.heroes.me.audio_track.isMuted()) {
-          Game.heroes.me.audio_track.unmute();
+        if (gameCore.me.audio_track.isMuted()) {
+          gameCore.me.audio_track.unmute();
           $('#mic-switch').text('Mic: on');
         } else {
-          Game.heroes.me.audio_track.mute();
+          gameCore.me.audio_track.mute();
           $('#mic-switch').text('Mic: off');
         }
       });
@@ -420,7 +426,7 @@ body {
           var say = $('#say').val();
           room.sendTextMessage(say);
           $('#say').val('');
-          Game.heroes.me.messages.push([say, (new Date).getTime() + 20 * 1000]);
+          gameCore.me.messages.push([say, (new Date).getTime() + 20 * 1000]);
         }
       });
 
@@ -441,231 +447,77 @@ body {
       }
 
       function onRemoteTrack(track) {
-        if (track.isLocal()) {
-          return;
-        }
-        const participant = track.getParticipantId();
-        if (track.getType() == 'audio') {
-          $('#game').append(`<audio id="audio-${participant}" autoplay="1" class="remote" />`);
-          track.attach($(`#audio-${participant}`)[0]);
-
-        } else if (track.getType() == 'video') {
-          if (!Game.heroes[participant].videoDom) {
-            Game.heroes[participant].videoDom = $('<video autoplay="1"></video>')[0];
-            Game.heroes[participant].video_track = track;
-            $('#video-pool').append(Game.heroes[participant].videoDom);
-          }
-          track.attach(Game.heroes[participant].videoDom);
-        }
+        Game.onRemoteTrack(track);
       }
 
       function onLocalTracks(tracks) {
-        for (let i = 0; i < tracks.length; i++) {
-          if (tracks[i].getType() === 'video') {
-            Game.heroes.me.camera_track = tracks[i];
-            room.addTrack(tracks[i]);
-            if (!Game.heroes.me.videoDom) {
-              Game.heroes.me.videoDom = $('<video autoplay="1"></video>')[0];
-              Game.heroes.me.video_track = tracks[i];
-              $('#video-pool').append(Game.heroes.me.videoDom);
-            }
-            $('#cam-switch').text('Camera: on');
-            tracks[i].attach(Game.heroes.me.videoDom);
-          } else {
-            Game.heroes.me.audio_track = tracks[i];
-            room.addTrack(tracks[i]);
-            tracks[i].addEventListener(JitsiMeetJS.events.track.TRACK_AUDIO_LEVEL_CHANGED, function(audioLevel) {
-              if (!Game.heroes.me.audio_track.isMuted()) {
-                Game.heroes.me.audioLevel = audioLevel;
-              }
-            });
-          }
-        }
-      }
-
-      function update_member_list() {
-        for (var id in room.participants) {
-          var participant = room.participants[id];
-          if ('undefined' === typeof(Game.heroes[id])) {
-            x = parseInt(participant.getProperty('left'));
-            y = parseInt(participant.getProperty('top'));
-            Game.heroes[id] = new Hero(map, x, y, participant.getProperty('character'), participant.getDisplayName());
-          }
-        }
-        $('#member-list').html('');
-        c = 0;
-        for (var id in Game.heroes) {
-          var li_dom = $('<li></li>');
-          var span_dom = $('<span></span>').css({
-            width: 32,
-            height: 32,
-            display: 'inline-block',
-            'background-image': 'url("sprite/' + Game.heroes[id].character + '.png")',
-            'background-position': '0px 0px',
-          });
-          li_dom.append(span_dom);
-          li_dom.append($('<span></span>').text(Game.heroes[id].name));
-
-          $('#member-list').append(li_dom);
-          c ++;
-        }
-        $('#member-count').text(c);
+        Game.onLocalTracks(tracks);
       }
 
       function addLog(log) {
         $('#log').val($.trim($('#log').val() + "\n" + log));
         $('#log').scrollTop($('#log')[0].scrollHeight - $('#log').height());
+      }
 
+      function renderMemberList(members) {
+        $('#member-list').html('');
+        let count = 0;
+        for (const id in members) {
+          if (!members.hasOwnProperty(id)) continue;
+          var li_dom = $('<li></li>');
+          var span_dom = $('<span></span>').css({
+            width: 32,
+            height: 32,
+            display: 'inline-block',
+            'background-image': 'url("sprite/' + members[id].character + '.png")',
+            'background-position': '0px 0px',
+          });
+          li_dom.append(span_dom);
+          li_dom.append($('<span></span>').text(members[id].name));
+
+          $('#member-list').append(li_dom);
+          count ++;
+        }
+        $('#member-count').text(count);
       }
 
       function onConferenceJoined() {
-        update_member_list();
-
-        room.on(JitsiMeetJS.events.conference.USER_JOINED, (id, user) => {
-          addLog(user.getDisplayName() + ' joined');
-          update_member_list();
-        });
-
-        room.on(JitsiMeetJS.events.conference.MESSAGE_RECEIVED, (id, text, ts, nick, other) => {
-          $('#chat').val($.trim($('#chat').val() + "\n" + nick + ":" + text));
-          $('#chat').scrollTop($('#chat')[0].scrollHeight - $('#chat').height());
-
-          if ('undefined' !== typeof(Game.heroes[id])) {
-            if ('undefined' === typeof(ts)) {
-              ts_number = (new Date).getTime();
-            } else {
-              ts_number = (new Date(ts)).getTime();
-            }
-            if (ts_number + 20 * 1000 < (new Date).getTime()) return;
-            Game.heroes[id].messages.push([text, ts_number + 20 * 1000]);
-          }
-        });
-
-        room.on(JitsiMeetJS.events.conference.USER_LEFT, (id, user) => {
-          addLog(user.getDisplayName() + ' left');
-          delete(Game.heroes[id]);
-          update_member_list();
-        });
-
-        room.on(JitsiMeetJS.events.conference.PARTICIPANT_PROPERTY_CHANGED, (user, text, ts) => {
-          var id = user.getId();
-          if (['top', 'left', 'character'].indexOf(text) >= 0) {
-            if ('undefined' !== typeof(Game.heroes[id])) {
-              var x, y;
-              x = parseInt(room.participants[id].getProperty('left'));
-              y = parseInt(room.participants[id].getProperty('top'));
-              if (!Number.isNaN(x) && !Number.isNaN(y)) {
-                Game.heroes[id].target_x = x;
-                Game.heroes[id].target_y = y;
-                if (Game.heroes[id].x == Game.heroes[id].y && Game.heroes[id].x == 0) {
-                  Game.heroes[id].x = x;
-                  Game.heroes[id].y = y;
-                }
-              }
-              if (Game.heroes[id].character != room.participants[id].getProperty('character')) {
-                Game.heroes[id].changeCharacter(room.participants[id].getProperty('character'));
-                update_member_list();
-              }
-            }
-          } else {
-            console.log(text);
-          }
-        });
-
-        room.on(JitsiMeetJS.events.conference.ENDPOINT_MESSAGE_RECEIVED, (participant, message) => {
-          if (message.type == 'teleport') {
-            var id = participant.getId();
-            if ('undefined' !== typeof(Game.heroes[id])) {
-              Game.heroes[id].x = Game.heroes[id].target_x = message.message[0];
-              Game.heroes[id].y = Game.heroes[id].target_y = message.message[1];
-            }
-          }
-        });
-        room.on(JitsiMeetJS.events.conference.DISPLAY_NAME_CHANGED, (id, name) => {
-          addLog(Game.heroes[id].name + ' changed name to ' + name);
-          Game.heroes[id].name = name;
-          update_member_list();
-        });
-
-        room.on(JitsiMeetJS.events.conference.TRACK_AUDIO_LEVEL_CHANGED, (id, audioLevel) => {
-          if ('undefined' !== typeof(Game.heroes[id])) {
-            Game.heroes[id].audioLevel = audioLevel;
-          }
-        });
+        gameCore.registerOnMemberListChanged(renderMemberList);
+        gameCore.updateMemberList();
+        room.on(
+            JitsiMeetJS.events.conference.USER_JOINED,
+            gameCore.onUserJoined.bind(gameCore));
+        room.on(
+            JitsiMeetJS.events.conference.MESSAGE_RECEIVED,
+            gameCore.onMessageReceived.bind(gameCore));
+        room.on(
+            JitsiMeetJS.events.conference.USER_LEFT, 
+            gameCore.onUserLeft.bind(gameCore));
+        room.on(
+            JitsiMeetJS.events.conference.PARTICIPANT_PROPERTY_CHANGED,
+            gameCore.onParticipantPropertyChanged.bind(gameCore));
+        room.on(
+            JitsiMeetJS.events.conference.ENDPOINT_MESSAGE_RECEIVED,
+            gameCore.onEndpointMessageReceived.bind(gameCore));
+        room.on(
+            JitsiMeetJS.events.conference.DISPLAY_NAME_CHANGED,
+            gameCore.onDisplayNameChanged.bind(gameCore));
+        room.on(
+            JitsiMeetJS.events.conference.TRACK_AUDIO_LEVEL_CHANGED,
+            gameCore.onTrackAudioLevelChanged.bind(gameCore));
       }
 
       function onConnectionSuccess() {
-        confOptions.confID = 'jitsi.jothon.online/' + room_id;
-        room = connection.initJitsiConference(room_id, confOptions);
-        room.setDisplayName($('#name').val());
-        room.setLocalParticipantProperty('character', $('#character').val());
-        room.setLocalParticipantProperty('top', parseInt(Game.heroes.me.y));
-        room.setLocalParticipantProperty('left', parseInt(Game.heroes.me.x));
-        room.on(JitsiMeetJS.events.conference.TRACK_ADDED, onRemoteTrack);
-        room.on(JitsiMeetJS.events.conference.TRACK_REMOVED, track => {
-          console.log(`track removed!!!${track}`);
-        });
-
-        room.on(
-          JitsiMeetJS.events.conference.CONFERENCE_JOINED,
-          onConferenceJoined);
-
-        room.join();
-
-        JitsiMeetJS.createLocalTracks({ devices: [ 'audio' ] })
-          .then(onLocalTracks);
-      };
-
-      function disconnect() {
-        connection.removeEventListener(
-          JitsiMeetJS.events.connection.CONNECTION_ESTABLISHED,
-          onConnectionSuccess);
-        connection.removeEventListener(
-          JitsiMeetJS.events.connection.CONNECTION_FAILED,
-          onConnectionFailed);
-        connection.removeEventListener(
-          JitsiMeetJS.events.connection.CONNECTION_DISCONNECTED,
-          disconnect);
-      }
-
-      const options = {
-        hosts: {
-          domain: 'jitsi.jothon.online',
-          muc: 'conference.jitsi.jothon.online',
-          focus: "focus.jitsi.jothon.online",
-        },
-        bosh: 'wss://jitsi.jothon.online/xmpp-websocket',
-        websocket: 'wss://jitsi.jothon.online/xmpp-websocket',
-
-        // The name of client node advertised in XEP-0115 'c' stanza
-        clientNode: 'http://jitsi.org/jitsimeet'
-      };
-
-      var confOptions = {
-        openBridgeChannel: true,
-        confID: '',
-      };
-      var room_id = '';
-
-      JitsiMeetJS.setLogLevel(JitsiMeetJS.logLevels.ERROR);
-      const initOptions = {
-        disableAudioLevels: false,
-
-        // The ID of the jidesha extension for Chrome.
-        desktopSharingChromeExtId: 'mbocklcggfhnbahlnepmldehdhpjfcjp',
-
-        // Whether desktop sharing should be disabled on Chrome.
-        desktopSharingChromeDisabled: false,
-
-        // The media sources to use when using screen sharing with the Chrome
-        // extension.
-        desktopSharingChromeSources: [ 'screen', 'window' ],
-
-        // Required version of Chrome extension
-        desktopSharingChromeMinExtVersion: '0.1',
-
-        // Whether desktop sharing should be disabled on Firefox.
-        desktopSharingFirefoxDisabled: true,
+        room = wrappedConnection.initConferenceRoom(
+            room_id,
+            $("#name").val(),
+            {
+              "character": $("#character").val(),
+              "top": parseInt(gameCore.me.y),
+              "left": parseInt(gameCore.me.x),
+            },
+            onRemoteTrack,
+            onConferenceJoined);
       };
 
       $('#button-pos').click(function(e){
@@ -735,9 +587,11 @@ body {
             },
           });
         } else {
+          const encodedRoomId = encodeURIComponent(room_id);
+          const encodedTarget = encodeURIComponent(target);
           $.ajax({
             type: 'post',
-            url: API_URL + 'rpg/updateobject?room=' + encodeURIComponent(room_id) + '&room_object_id=' + encodeURIComponent(target),
+            url: API_URL + `rpg/updateobject?room=${encodedRoomId}&room_object_id=${encodedTarget}`,
             data: {data: JSON.stringify(Game.objects[target])},
             success: function(ret){
               loadRoomData(room_id);
@@ -824,39 +678,22 @@ body {
 
         Game.onload(function() {
           var d = new Promise(function(resolve, reject) {
-            JitsiMeetJS.init(initOptions);
-            confOptions.confID = 'jitsi.jothon.online/' + room_id;
-            connection = new JitsiMeetJS.JitsiConnection(null, null, options);
-
-            connection.addEventListener(
-              JitsiMeetJS.events.connection.CONNECTION_ESTABLISHED,
-              onConnectionSuccess);
-            connection.addEventListener(
-              JitsiMeetJS.events.connection.CONNECTION_FAILED,
-              onConnectionFailed);
-            connection.addEventListener(
-              JitsiMeetJS.events.connection.CONNECTION_DISCONNECTED,
-              disconnect);
-
-            connection.connect();
+            wrappedConnection.initConnection(
+                onConnectionSuccess, onConnectionFailed);
+            connection = wrappedConnection.connection;
             resolve();
           });
           return d;
         });
       });
 
+      const unload = () => {
+        wrappedConnection.disconnect();
+      }
       $(window).bind('beforeunload', unload);
       $(window).bind('unload', unload);
-      function unload() {
-        if (room) {
-          room.leave();
-        }
-        if (connection) {
-          connection.disconnect();
-        }
-      }
 
-      var iframe_click = function(e){
+      var onIframeClick = function(e) {
         e.preventDefault();
         if ($(this).is('.max')) {
           $('iframe', this.parentNode).css({
@@ -896,10 +733,10 @@ body {
           $(this).addClass('max');
         }
       };
-      $('body').on('click', '.iframe-div-area', function(e){ iframe_click.bind(this)(e); });
-      $('body').on('touchstart', '.iframe-div-area', function(e){ iframe_click.bind(this)(e); });
+      $('body').on('click', '.iframe-div-area', function(e){ onIframeClick.bind(this)(e); });
+      $('body').on('touchstart', '.iframe-div-area', function(e){ onIframeClick.bind(this)(e); });
 
-      window_change = function(){
+      onWindowChange = function(){
         var width = $('#game').width();
         var height = $('#game').height();
         $('#game').attr('width', width).attr('height', height);
@@ -908,18 +745,18 @@ body {
         Game.camera.maxX = map.cols * map.tsize - width;
         Game.camera.maxY = map.rows * map.tsize - height;
       };
-      $(window).resize(window_change);
-      $(window).on('orientationchange', window_change);
+      $(window).resize(onWindowChange);
+      $(window).on('orientationchange', onWindowChange);
 
       if ('ontouchstart' in window) {
         $('#arrow-controller').show();
-        $('#arrow-controller img').on('touchstart', function(event){
+        $('#arrow-controller img').on('touchstart', function(event) {
           event.preventDefault();
-          var e = event.originalEvent.touches[0];
-          var offsetX = e.clientX - $(this).offset().left;
-          var offsetY = e.clientY - $(this).offset().top;
-          var width = $(this).width();
-          var height = $(this).height();
+          const e = event.originalEvent.touches[0];
+          const offsetX = e.clientX - $(this).offset().left;
+          const offsetY = e.clientY - $(this).offset().top;
+          const width = $(this).width();
+          const height = $(this).height();
           if (offsetY < height / 2) {
             if (offsetX > width / 3 && offsetX < 2 * width / 3) {
               Keyboard._keys[Keyboard.UP] = true;
@@ -934,7 +771,10 @@ body {
             }
           }
         }).on('touchend', function(e){
-          Keyboard._keys[Keyboard.UP] = Keyboard._keys[Keyboard.DOWN] = Keyboard._keys[Keyboard.LEFT] = Keyboard._keys[Keyboard.RIGHT] =  false;
+          Keyboard._keys[Keyboard.UP] = false;
+          Keyboard._keys[Keyboard.DOWN] = false;
+          Keyboard._keys[Keyboard.LEFT] = false;
+          Keyboard._keys[Keyboard.RIGHT] =  false;
         });
       }
 

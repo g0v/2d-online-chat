@@ -6,6 +6,7 @@
 <script src="common.js"></script>
 <script src="hero.js"></script>
 <script src="map-editor.js"></script>
+<script src="game-core.js"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.6/css/bootstrap.css">
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
 <style>
@@ -47,6 +48,7 @@
             <hr>
             Object: <div id="label-object"></div>
             <script>
+              let gameCore = new GameCore();
 $('#button-loadsample').click(function(e){
         e.preventDefault();
         // Game.loadSample();
