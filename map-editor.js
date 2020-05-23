@@ -48,8 +48,8 @@ Game.init = function() {
 };
 
 Game.spaceClick = function() {
-  const c = map.getCol(this.heros.me.x);
-  const r = map.getRow(this.heros.me.y);
+  const c = map.getCol(gameCore.me.x);
+  const r = map.getRow(gameCore.me.y);
   if ($('[name="layer"]:checked').val() == 'wall') {
     map.layers['wall'][r * map.cols + c] =
         !map.layers['wall'][r * map.cols + c];

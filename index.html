@@ -111,6 +111,7 @@ body {
             Character: <select id="character"></select>
             <form id="room-form">
               Room: <input type="text" name="room-name" value="chat2d">
+              <button id='load-room' type="button">Load</button>
               <button type="submit">Join</button>
             </form>
           </div>
@@ -143,6 +144,7 @@ body {
                 <option value="npc">NPC</option>
                 <option value="image">Image</option>
                 <option value="iframe">Iframe</option>
+                <option value="portal">Portal</option>
                 <!-- <option value="hackmd">HackMD</option> -->
                 <!-- <option value="textbox">textbox</option> -->
                 <!-- <option value="screenshare">Screen Share</option> -->
@@ -192,11 +194,44 @@ body {
               <br>
               <button type="submit">Add Object</button>
             </script>
+            <script id="tmpl-object-param-portal" type="text/html">
+              Room ID: <input type="text" name="portal_room_id"><br>
+              <br>
+              <button type="submit">Add Object</button>
+            </script>
             <button type="button" class="button-cancel">Cancel</button>
           </form>
         </div>
       </div>
+
+      <div class="modal" tabindex="-1" role="dialog" id='confirm-teleport-dialog'>
+        <div class="modal-dialog" role="document">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title">傳送點</h5>
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+              </button>
+            </div>
+            <div class="modal-body">
+              <p>這個傳送點會打開去 <span id='target-portal-room-id'>未知</span> 的通道。</p>
+              <p>你確定嗎？</p>
+            </div>
+            <div class="modal-footer">
+              <button id='confirm-teleport-ok' type="button" class="btn btn-primary">確定</button>
+              <button type="button" class="btn btn-secondary" data-dismiss="modal">不要</button>
+            </div>
+          </div>
+        </div>
+      </div>
       <script>
+        $('#confirm-teleport-ok').click(function(e) {
+          e.preventDefault();
+          const targetRoomID = encodeURIComponent(
+              $('#target-portal-room-id').text());
+          window.open(`https://stimim.github.io/2d-online-chat/?room=${targetRoomID}`, '_black')
+          $('#confirm-teleport-dialog').modal('hide');
+        });
         $('.nav-tab').click(function(e){
           e.preventDefault();
           $('.panel-tab').hide();
@@ -226,6 +261,11 @@ body {
         room_id = 'chat2d';
       }
       $('input[name="room-name"]').val(room_id);
+      $('#load-room').click((e) => {
+        e.preventDefault();
+        room_id = $('#room-form [name="room-name"]').val();
+        loadRoomData(room_id);
+      });
       loadRoomData(room_id);
       var characters = [
         'school uniform 1/su1 Student fmale 01',
@@ -648,7 +688,7 @@ body {
             y: parseInt($('#form-add-object [name="y"]').val()),
             data: {},
           };
-          if (type == 'image' || type == 'iframe') {
+          if (type == 'image' || type == 'iframe' || type === 'portal') {
             Game.objects.preview.x2 = parseInt($('#form-add-object [name="x2"]').val());
             Game.objects.preview.y2 = parseInt($('#form-add-object [name="y2"]').val());
           }

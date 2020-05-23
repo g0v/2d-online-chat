@@ -270,6 +270,7 @@ Game.getDrawingObjects = function() {
 
 Game.getDrawingCustomObjects = function() {
   const objects = [];
+  let onPortal = false;
   for (const id in Game.objects) {
     const object = Game.objects[id];
     if (object.type == 'image') {
@@ -319,7 +320,7 @@ Game.getDrawingCustomObjects = function() {
       ]);
     } else if (object.type == 'iframe') {
       if (!$('#iframe-' + id).length) {
-        const iframeDom = $('<div></div>').attr('id', 'iframe-' + id);
+        const iframeDom = $('<div></div>').attr('id', 'iframe-' + id).addClass('room-custom-object');
         iframeDom.append($('<iframe allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture"></iframe>').attr('src', object.data.iframe_url).css({'margin': 0, 'padding': 0, 'border': 0, 'width': '100%', 'height': '100%', 'z-index': 10}));
         iframeDom.append($('<div></div>').css({'position': 'absolute', 'left': 0, 'top': 0, 'width': '100%', 'height': '100%', 'z-index': 15, 'cursor': 'pointer'}).addClass('iframe-div-area'));
         $('body').append(iframeDom);
@@ -336,7 +337,54 @@ Game.getDrawingCustomObjects = function() {
         margin: '0px',
         padding: '0px',
       });
+    } else if (object.type === 'portal') {
+      const startX = Math.min(object.x, object.x2);
+      const startY = Math.min(object.y, object.y2);
+      const endX = Math.max(object.x, object.x2);
+      const endY = Math.max(object.y, object.y2);
+      const startCol = map.getCol(startX);
+      const startRow = map.getRow(startY);
+      const endCol = map.getCol(endX);
+      const endRow = map.getRow(endY);
+
+      const myCol = map.getCol(gameCore.me.x);
+      const myRow = map.getRow(gameCore.me.y);
+
+      if (startCol <= myCol && myCol <= endCol &&
+          startRow <= myRow && myRow <= endRow) {
+        onPortal = true;
+        Game.pendingTask.push(() => {
+          Game.confirmTeleport(object.data.portal_room_id);
+        });
+      }
+      const level = object.y + 32;
+      objects.push([
+        Math.max(object.y, object.y2) + 32,
+        () => {
+          for (let col = startCol; col <= endCol; col++) {
+            for (let row = startRow; row <= endRow; row++) {
+              for (let r = 1; r < 16; r += 4) {
+                Game.ctx.beginPath();
+
+                Game.ctx.strokeStyle = 'cyan';
+
+                Game.ctx.arc(
+                  map.getX(col) + 16 - this.camera.x,
+                  map.getY(row) + 16 - this.camera.y,
+                  r,
+                  0, 2 * Math.PI,
+                  false,
+                );
+                Game.ctx.stroke();
+              }
+            }
+          }
+        }
+      ]);
     }
+  }
+  if (!onPortal) {
+    Game.previousAskedTargetRoomID = null;
   }
   return objects;
 };

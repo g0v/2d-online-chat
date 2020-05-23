@@ -21,6 +21,7 @@ function loadRoomData(roomId) {
       }
       Game.objects = {};
       $('#object-list').html('');
+      $('.room-custom-object').remove();
       ret.data.objects.map(function(o) {
         if ('undefined' === typeof(o.data)) {
           return;
@@ -123,8 +124,46 @@ Game.init = function() {
   };
 };
 
+Game.previousAskedTargetRoomID = null;
+Game.previousAskedTimestamp = 0;
+Game.confirmTeleport = function(targetRoomID) {
+  const now = (new Date).getTime();
+
+  const dialog = $('#confirm-teleport-dialog');
+  if ((Game.previousAskedTargetRoomID === targetRoomID &&
+      now < Game.previousAskedTimestamp + 60 * 1000) ||
+      dialog.is(':visible')) {
+    // don't span the user
+    return;
+  }
+
+  console.log(`Portal triggered, going to ${targetRoomID}`);
+  Game.previousAskedTimestamp = now;
+  Game.previousAskedTargetRoomID = targetRoomID;
+
+  // Enable backdrop somehow cause the UI to freeze.
+  dialog.modal({backdrop: false});
+  $('#target-portal-room-id').html(targetRoomID);
+}
+
+Game.pendingTask = [];
 let prevUpdateTime = null;
 Game.update = function(delta) {
+  if (Game.pendingTask) {
+    const tasks = [...Game.pendingTask];
+    // Just in case a pendingTask want to add new tasks.
+    Game.pendingTask = [];
+    tasks.map((task) => {
+      if (typeof(task) !== 'function') {
+        // really?
+        console.log(
+            `pendingTasks should be functions, but this is: ${typeof(task)}`);
+        return;
+      }
+      task();
+    });
+  }
+
   // handle hero movement with arrow keys
   let dirX = 0;
   let dirY = 0;
@@ -207,6 +246,7 @@ Game.render = function() {
   if (null !== Game.mouse && 'undefined' !== typeof(Game.mouse)) {
     const x = map.getX(map.getCol(Game.mouse[0] + this.camera.x));
     const y = map.getY(map.getRow(Game.mouse[1] + this.camera.y));
+    this.ctx.strokeStyle = 'black';
     if (x < map.cols * map.tsize && y < map.rows * map.tsize) {
       this.ctx.beginPath();
       this.ctx.rect(x - this.camera.x, y - this.camera.y, map.tsize, map.tsize);
