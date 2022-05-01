@@ -50,12 +50,12 @@ class JitsiConnection {
 
     const options = {
       hosts: {
-        domain: 'jitsi.jothon.online',
-        muc: 'conference.jitsi.jothon.online',
-        focus: 'focus.jitsi.jothon.online',
+        domain: 'meet.jit.si',
+        muc: 'conference.meet.jit.si',
+        focus: 'focus.meet.jit.si',
       },
-      bosh: 'wss://jitsi.jothon.online/xmpp-websocket',
-      websocket: 'wss://jitsi.jothon.online/xmpp-websocket',
+      bosh: 'wss://meet.jit.si/xmpp-websocket',
+      websocket: 'wss://meet.jit.si/xmpp-websocket',
 
       // The name of client node advertised in XEP-0115 'c' stanza
       clientNode: 'http://jitsi.org/jitsimeet',
@@ -104,7 +104,7 @@ class JitsiConnection {
     }
     const confOptions = {
       openBridgeChannel: true,
-      confID: `jitsi.jothon.online/${roomID}`,
+      confID: `meet.jit.si/${roomID}`,
     };
 
     this.room = this.connection.initJitsiConference(roomID, confOptions);
