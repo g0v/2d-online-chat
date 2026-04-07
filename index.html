@@ -4,7 +4,6 @@
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
-    <script src="//meet.jit.si/libs/lib-jitsi-meet.min.js"></script>
     <script src="common.js?"></script>
     <script src="hero.js?"></script>
     <script src="logic-grid.js?"></script>
@@ -432,11 +431,7 @@ body {
       $('#cam-switch').click(function(e){
         e.preventDefault();
         if (!gameCore.me.camera_track) {
-          JitsiMeetJS.createLocalTracks({ devices: [ 'video' ] })
-            .then(onLocalTracks)
-            .catch(error => {
-              alert('權限錯誤 Permission Error: 無法得到攝影機權限 Error obtaining camera permission. ' + error);
-            });
+          alert('Camera feature is not available.');
         } else {
           gameCore.me.camera_track.mute().then(function(){
             gameCore.me.camera_track.dispose();
