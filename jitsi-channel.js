@@ -61,8 +61,10 @@ class JitsiConnection {
       // Proxy so callers can do: participants[id].getProperty(key) / getDisplayName()
       participants: new Proxy(members, {
         get(target, id) {
+          if (!Object.prototype.hasOwnProperty.call(target, id)) {
+            return Reflect.get(target, id);
+          }
           const m = target[id];
-          if (!m) return undefined;
           return {
             getProperty: (key) => (m.meta || {})[key],
             getDisplayName: () => m.username,
