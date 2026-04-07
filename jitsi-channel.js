@@ -76,12 +76,15 @@ class JitsiConnection {
       }),
       on(eventName, handler) { handlers[eventName] = handler; },
       sendTextMessage(text) {
+        if (!self.ws || self.ws.readyState !== WebSocket.OPEN) return;
         self.ws.send(JSON.stringify({type: 'say', payload: {type: 'chat', message: text}}));
       },
       broadcastEndpointMessage(msg) {
+        if (!self.ws || self.ws.readyState !== WebSocket.OPEN) return;
         self.ws.send(JSON.stringify({type: 'say', payload: msg}));
       },
       setLocalParticipantProperty(key, value) {
+        if (!self.ws || self.ws.readyState !== WebSocket.OPEN) return;
         const meta = {};
         meta[key] = value;
         self.ws.send(JSON.stringify({type: 'set-meta', meta}));
